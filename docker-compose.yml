@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  client:
+    build:
+      context: ./BookShop.Client
+    ports:
+      - "80:80"
+    volumes:
+      - ./vuejs:/project
+      - /project/node_modules
+    restart: always
+
+  backend:
+    build:
+      context: ./BookShop.API
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5045
+    ports:
+      - "5013:5013"
+    restart: always
+    # db:
+    #   image: postgres
+    #   restart: always
+    #   volumes:
+    #     - "./pgdata:/var/lib/postgresql/data"
+    #   environment:
+    #     POSTGRES_DB: notesapp
+    #     POSTGRES_USER: postgres
+    #     POSTGRES_PASSWORD: 1
+    # networks:
+    #   - backend
