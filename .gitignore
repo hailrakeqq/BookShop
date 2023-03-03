@@ -3,3 +3,6 @@ node_modules
 Folder.DotSettings.user
 package-lock.json
 package.json
+BookShop.Test/.vscode/*
+BookShop.Client/.vscode/*
+BookShop.API/.vscode/*
