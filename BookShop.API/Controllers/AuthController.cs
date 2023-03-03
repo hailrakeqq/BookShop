@@ -31,7 +31,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [Route("Registration")]
-    public async Task<IActionResult> CreateUser(User user)
+    public async Task<IActionResult> CreateUser([FromBody]User user)
     {
         var currentUser = _users.Find(u => u.Email == user.Email!.ToLower() ||
                                            u.Username == user.Username!.ToLower()).FirstOrDefault();
@@ -66,8 +66,9 @@ public class AuthController : Controller
     [Route("Login")]
     public IActionResult Login([FromBody] UserLoginModel userLoginModel)
     {
-        var currentUser = _users.Find(u => u.Email == userLoginModel.Email!.ToLower() &&
-                                           u.Password == Toolchain.GenerateHash(userLoginModel.Password))
+        var currentUser = _users.Find(u => (u.Email == userLoginModel.EmailOrLogin!.ToLower() || 
+                                            u.Username == userLoginModel.EmailOrLogin!.ToLower()) &&
+                                            u.Password == Toolchain.GenerateHash(userLoginModel.Password))
             .FirstOrDefault();
 
         if (currentUser != null)

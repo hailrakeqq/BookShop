@@ -17,13 +17,12 @@
 import Form from "@/component/Form.vue";
 import Booklist from "@/component/Booklist.vue";
 import {Book} from "@/component/book"
-import { defineComponent } from 'vue'
 import MyDialog from "@/component/UI/MyDialog.vue";
 import MyButton from "@/component/UI/MyButton.vue";
 import axios from "axios";
 import MySelect from "@/component/UI/MySelect.vue";
 
-export default defineComponent({
+export default {
   components: {
     MySelect,
     MyButton,
@@ -72,7 +71,7 @@ export default defineComponent({
   mounted() {
     this.getBookList();
   }
-})
+}
 </script>
 
 <style>
