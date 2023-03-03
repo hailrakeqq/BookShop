@@ -1,8 +1,0 @@
-{
-  "name": "BookShop",
-  "version": "1.0.0",
-  "dependencies": {},
-  "devDependencies": {
-    "vue-router": "^4.1.6"
-  }
-}
