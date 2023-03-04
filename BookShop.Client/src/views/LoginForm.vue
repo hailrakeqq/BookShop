@@ -23,6 +23,7 @@ import {RouterLink} from 'vue-router'
 import MyButton from "@/component/UI/MyButton.vue";
 import MyInput from "@/component/UI/MyInput.vue";
 import MyForm from "@/component/Form.vue"
+import '../router'
 export default {
   name: 'LoginForm',
   components: {MyInput, MyButton, MyForm},
@@ -55,8 +56,9 @@ export default {
           body: JSON.stringify(userData)
         }).then(response => response.status == 200 ?  response.json() : alert("User was not found."))
             .then(data => {
-                this.saveUserDataToLocalStorage(data)
-                //TODO: redirect to main, and if user logged in add button logout instead of login
+              this.saveUserDataToLocalStorage(data)
+              setTimeout(() => this.$router.go(), 100)
+              this.$router.push('/')
             })
       }
     }
