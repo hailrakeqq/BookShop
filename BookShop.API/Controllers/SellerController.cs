@@ -16,7 +16,7 @@ public class SellerController : Controller
     {
         _bookRepository = bookRepository;
     }
-
+    
     [HttpPost]
     [Route("AddBook")]
     public IActionResult AddBook(Book book)
