@@ -10,20 +10,22 @@ public class FileController : Controller
 {
     [HttpPost]
     [Route("SaveBookCover")]
-    [Authorize]
-    public IActionResult SaveBookCover(IFormFile file)
+    //[Authorize]
+    public IActionResult SaveBookCover(IFormCollection requestContent)
     {
+        var file = requestContent.Files[0];
+        
         if (file == null || file.Length == 0)
             return BadRequest("Please select a file to upload");
-
-        var fileName = Path.GetFileName(file.FileName);
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", fileName);
-
+        
+        var fileName = Path.GetFileName(requestContent.Files[0].FileName);
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "bookCover", $"{fileName}.jpg");
+        
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             file.CopyTo(stream);
         }
-
+        
         return Ok("File uploaded successfully!");
     }
 }

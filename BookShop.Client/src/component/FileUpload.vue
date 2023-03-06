@@ -1,7 +1,7 @@
 <template>
   <div class="file-upload">
     <div class="file-upload__area">
-      <div v-if="!file.isUploaded">
+      <div v-if="!fileInfo.isUploaded">
         <input type="file" name="" id="" @change="handleFileChange($event)" />
         <div v-if="errors.length > 0">
           <div
@@ -13,13 +13,13 @@
           </div>
         </div>
       </div>
-      <div v-if="file.isUploaded" class="upload-preview">
-        <img :src="file.url" v-if="file.isImage" class="file-image" alt="" />
-        <div v-if="!file.isImage" class="file-extention">
-          {{ file.fileExtention }}
+      <div v-if="fileInfo.isUploaded" class="upload-preview">
+        <img :src="fileInfo.url" v-if="fileInfo.isImage" class="file-image" alt="" />
+        <div v-if="!fileInfo.isImage" class="file-extention">
+          {{ fileInfo.fileExtention }}
         </div>
         <span class="file-name">
-          {{ file.name }}{{ file.isImage ? `.${file.fileExtention}` : "" }}
+          {{ fileInfo.name }}{{ fileInfo.isImage ? `.${fileInfo.fileExtention}` : "" }}
         </span>
         <div class="">
           <button @click="resetFileInput">Change file</button>
@@ -51,7 +51,8 @@ export default {
       errors: [],
       isLoading: false,
       uploadReady: true,
-      file: {
+      file: null,
+      fileInfo: {
         name: "",
         size: 0,
         type: "",
@@ -67,6 +68,7 @@ export default {
       this.errors = [];
       if (e.target.files && e.target.files[0]) {
         if (this.isFileValid(e.target.files[0])) {
+          this.file = e.target.files[0]
           const file = e.target.files[0],
               fileSize = Math.round((file.size / 1024 / 1024) * 100) / 100,
               fileExtention = file.name.split(".").pop(),
@@ -77,7 +79,7 @@ export default {
           reader.addEventListener(
               "load",
               () => {
-                this.file = {
+                this.fileInfo = {
                   name: fileName,
                   size: fileSize,
                   type: file.type,
@@ -136,7 +138,7 @@ export default {
     },
     sendDataToParent() {
       this.resetFileInput();
-      this.$emit("file-uploaded", this.file);
+      this.$emit("file-uploaded", this.file, this.fileInfo);
     },
   },
 };

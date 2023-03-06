@@ -9,11 +9,11 @@
           <button @click="showFileSelect = !showFileSelect">Select a file</button>
         </div>
         <div v-show="showFileSelect">
-          <FileUpload :maxSize="1" accept="png" @file-uploaded="getUploadedData" />
+          <FileUpload :maxSize="3" accept="jpg" @file-uploaded="getUploadedData" />
         </div>
 
         <div v-if="fileSelected">
-          Successfully Selected file: {{ file.name }}.{{ file.fileExtention }}
+          Successfully Selected file: {{ fileInfo.name }}.{{ fileInfo.fileExtention }}
         </div>
       </div>
 
@@ -63,6 +63,7 @@ import MyInput from "@/component/UI/MyInput.vue";
 import MyForm from "@/component/Form.vue"
 import BookGenreList from "@/component/BookGenreList.vue"
 import FileUpload from "@/component/FileUpload.vue"
+import axios from 'axios'
 export default {
 name: "BookConstructor",
   components: {MyInput, MyButton, MyForm, BookGenreList, FileUpload},
@@ -86,7 +87,8 @@ name: "BookConstructor",
         {label: 'Fantasy', value: 'fantasy'},
         {label: 'Science fiction', value: 'science-fiction'}
       ],
-      file: {},
+      file: null,
+      fileInfo: null,
       fileSelected: false,
       showFileSelect: false,
       book: {
@@ -125,37 +127,40 @@ name: "BookConstructor",
     }
   }, 
   methods: {
-    getUploadedData(file) {
+    getUploadedData(file, fileInfo) {
       this.fileSelected = true;
       this.showFileSelect = false;
       this.file = file;
+      this.fileInfo = fileInfo
     },
     async sendBookCoverFileToServer() {
       const formData = new FormData()
-      formData.append(`${this.title}`, this.file)
-      console.log(formData)
-      //TODO: create controller to receive image c#
-      await fetch('http://localhost:5045/api/File/SaveBookCover', {
-        method: 'POST',
-        headers: {
-          "Authorization": `bearer ${this.sellerData.jwtToken}`,
-          "seller-id": `${this.sellerData.id}`,
-          "content-type": "multipart/form-data",
-        },
-        body: formData
-      })
+      formData.append(`${this.book.title}`, this.file, this.book.title)
+      try {
+        await axios.post('http://localhost:5045/api/File/SaveBookCover', formData, {
+          headers: {
+            'Authorization': `bearer ${this.sellerData.jwtToken}`,
+            'seller-id': `${this.sellerData.id}`,
+            "Content-Type": "multipart/form-data"
+          }})
+      } catch (e) {
+        console.log(e)
+      }
     },
     async sendBookTextDataToServer() {
-      await fetch('adderss', {
-        method: 'POST',
-        headers: {
-          "Authorization": `bearer ${this.sellerData.jwtToken}`,
-          "seller-id": `${this.sellerData.id}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(this.book)
-      })
+      try {
+        await axios.post('http://localhost:5045/api/Seller/AddBook', JSON.stringify(this.book),{
+          headers: {
+            "Authorization": `bearer ${this.sellerData.jwtToken}`,
+            "seller-id": `${this.sellerData.id}`,
+            "Content-Type": "application/json",
+          },
+        })
+      } catch (e){
+        console.log(e)
+      }
     }
+    //TODO: Onclick add book make 2 request and send data to db
   }
 }
 </script>
