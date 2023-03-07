@@ -19,7 +19,7 @@ public class SellerController : Controller
     
     [HttpPost]
     [Route("AddBook")]
-    public IActionResult AddBook(Book book)
+    public IActionResult AddBook([FromBody] Book book)
     {
         var currentBook = _bookRepository.CheckIfExist(book);
 

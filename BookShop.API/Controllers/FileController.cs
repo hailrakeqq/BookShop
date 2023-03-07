@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +9,7 @@ public class FileController : Controller
 {
     [HttpPost]
     [Route("SaveBookCover")]
-    //[Authorize]
+    [Authorize]
     public IActionResult SaveBookCover(IFormCollection requestContent)
     {
         var file = requestContent.Files[0];

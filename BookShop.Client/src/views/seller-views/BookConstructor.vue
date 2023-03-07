@@ -51,8 +51,7 @@
         <my-input type="number" class="count" v-model="book.countInStock"/>
       </div>
       
-      <my-button>Add Book!</my-button>
-      <my-button @click="sendBookCoverFileToServer">Test save cover!</my-button>
+      <my-button @click="insertBookToDB">Add Book!</my-button>
     </MyForm>
   </div>
 </template>
@@ -64,6 +63,7 @@ import MyForm from "@/component/Form.vue"
 import BookGenreList from "@/component/BookGenreList.vue"
 import FileUpload from "@/component/FileUpload.vue"
 import axios from 'axios'
+import '../../router'
 export default {
 name: "BookConstructor",
   components: {MyInput, MyButton, MyForm, BookGenreList, FileUpload},
@@ -101,6 +101,7 @@ name: "BookConstructor",
         pages: 0,
         countInStock: 0,
       },
+      isRequestStatus200: []
     }
   },
   computed: {
@@ -133,6 +134,10 @@ name: "BookConstructor",
       this.file = file;
       this.fileInfo = fileInfo
     },
+    isDataValid(){
+      return this.isTitleValid && this.isDescriptionValid && this.isAuthorValid && this.isPriceValid &&
+          this.isPagesValid && this.isYearOfPublicationValid && this.isCountInStockValid
+    },
     async sendBookCoverFileToServer() {
       const formData = new FormData()
       formData.append(`${this.book.title}`, this.file, this.book.title)
@@ -142,25 +147,56 @@ name: "BookConstructor",
             'Authorization': `bearer ${this.sellerData.jwtToken}`,
             'seller-id': `${this.sellerData.id}`,
             "Content-Type": "multipart/form-data"
-          }})
+          }}).then(Response => {
+            if(Response.status == 200)
+              this.isRequestStatus200[0] = true
+          })
       } catch (e) {
         console.log(e)
       }
     },
     async sendBookTextDataToServer() {
       try {
-        await axios.post('http://localhost:5045/api/Seller/AddBook', JSON.stringify(this.book),{
+          const book = {
+            sellerId: this.sellerData.id,
+            title: this.book.title,
+            description: this.book.description,
+            genre: this.book.genre,
+            author: this.book.author,
+            price: this.book.price,
+            yearOfPublication: this.book.yearOfPublication,
+            countOfPages: this.book.pages,
+            countInStock: this.book.countInStock
+          }
+        await axios.post('http://localhost:5045/api/Seller/AddBook', JSON.stringify(book),{
           headers: {
             "Authorization": `bearer ${this.sellerData.jwtToken}`,
             "seller-id": `${this.sellerData.id}`,
             "Content-Type": "application/json",
           },
+        }).then(Response => {
+          if(Response.status == 200)
+            this.isRequestStatus200[1] = true
         })
       } catch (e){
         console.log(e)
       }
+    },
+    isRequestSuccessfully(): boolean{
+      return ((this.isRequestStatus200[0] && this.isRequestStatus200[1]) == true)
+    },
+     insertBookToDB(){
+      if(this.isDataValid()) {
+        Promise.all([this.sendBookCoverFileToServer(), this.sendBookTextDataToServer()])
+            .then(() => {
+              if(this.isRequestSuccessfully())
+                alert("Book has been successfully add. Redirecting to stock")
+                this.$router.push('/stock')
+            })
+      } else {
+        alert("data is not valid")
+      }
     }
-    //TODO: Onclick add book make 2 request and send data to db
   }
 }
 </script>

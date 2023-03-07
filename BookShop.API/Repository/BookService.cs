@@ -16,8 +16,9 @@ public class BookService : IMongoBookRepository
 
     public bool CheckIfExist(Book item)
     {
-        var existBook = _books.Find(u => u.Title == item.Title).FirstOrDefault();
-
+        // var existBook = _books.Find(u => u.Title == item.Title).FirstOrDefault();
+        var filter = Builders<Book>.Filter.Eq("title", item.Title);
+        var existBook = _books.Find(filter).FirstOrDefault();
         if (existBook != null)
             return true;
 

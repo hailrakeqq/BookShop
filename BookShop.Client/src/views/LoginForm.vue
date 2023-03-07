@@ -47,7 +47,6 @@ export default {
           emailOrLogin: this.emailOrName,
           password: this.password
         }
-        console.log(userData)
         await fetch('http://localhost:5045/api/Auth/Login',{
           method: 'POST',
           headers:{
