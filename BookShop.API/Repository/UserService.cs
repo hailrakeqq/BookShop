@@ -21,7 +21,7 @@ public class UserService : IMongoUserRepository
     private IMongoCollection<BsonDocument> _wishList =>
         _context.MongoDatabase.GetCollection<BsonDocument>("UsersWishlist");
 
-    public bool CheckIfExist(User item)
+    private bool CheckIfExist(User item)
     {
         var currentUser = _users.Find(u => u.Email == item.Email!.ToLower() ||
                                            u.Username == item.Username!.ToLower()).FirstOrDefault();
@@ -42,52 +42,50 @@ public class UserService : IMongoUserRepository
         return _users.Find(u => u.Id == id).FirstOrDefault();
     }
 
-    public async Task<List<Book>> GetUserWishListOrLibrary(string typeOfRequest, string id)
+    public List<Book> GetUserWishlist(string id)
     {
         var user = GetItem(id);
-        if (user != null)
+        if (CheckIfExist(user))
         {
             var filter = Builders<BsonDocument>.Filter.Eq("OwnerId", id);
+            var result = _wishList.Find(filter).FirstOrDefault();
+            GetBookList(result["Wishlist"]);
+        }
 
-            if (typeOfRequest == "GetUserWishList")
-            {
-                var result = _wishList.Find(filter).FirstOrDefault();
-                return result["Wishlist"].AsBsonArray.Select(x => new Book
-                {
-                    Id = x["_id"].AsString,
-                    SellerId = x["SellerId"].AsString,
-                    Title = x["Title"].AsString,
-                    Description = x["Description"].AsString,
-                    Genre = x["Genre"].AsBsonArray.Select(g => g.ToString()).ToArray(),
-                    Author = x["Author"].AsString,
-                    Price = x["Price"].AsDouble,
-                    YearOfPublication = x["YearOfPublication"].AsInt32,
-                    CountOfPages = x["CountOfPages"].AsInt32,
-                    CountInStock = x["CountInStock"].AsInt32
-                }).ToList();
-            }
-            else
-            {
-                var result = _library.Find(filter).FirstOrDefault();
-                return result["BoughtBook"].AsBsonArray.Select(x => new Book
-                {
-                    Id = x["_id"].AsString,
-                    SellerId = x["SellerId"].AsString,
-                    Title = x["Title"].AsString,
-                    Description = x["Description"].AsString,
-                    Genre = x["Genre"].AsBsonArray.Select(g => g.ToString()).ToArray(),
-                    Author = x["Author"].AsString,
-                    Price = x["Price"].AsDouble,
-                    YearOfPublication = x["YearOfPublication"].AsInt32,
-                    CountOfPages = x["CountOfPages"].AsInt32,
-                    CountInStock = x["CountInStock"].AsInt32
-                }).ToList();
-            }
+        return null;
+    }
+
+    public List<Book> GetUserLibrary(string id)
+    {
+        var user = GetItem(id);
+
+        if (CheckIfExist(user))
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("OwnerId", id);
+            var result = _library.Find(filter).FirstOrDefault();
+            return GetBookList(result["BoughtBook"]);
         }
 
         return null!;
     }
 
+    public List<Book> GetBookList(BsonValue searchedList)
+    {
+        return searchedList.AsBsonArray.Select(x => new Book
+        {
+            Id = x["_id"].AsString,
+            SellerId = x["SellerId"].AsString,
+            Title = x["Title"].AsString,
+            Description = x["Description"].AsString,
+            Genre = x["Genre"].AsBsonArray.Select(g => g.ToString()).ToArray(),
+            Author = x["Author"].AsString,
+            Price = x["Price"].AsDouble,
+            YearOfPublication = x["YearOfPublication"].AsInt32,
+            CountOfPages = x["CountOfPages"].AsInt32,
+            CountInStock = x["CountInStock"].AsInt32
+        }).ToList();
+    }
+    
     public bool CheckIfBookExistInWishList(string userId, string bookId)
     {
         var filter = Builders<BsonDocument>.Filter.And(

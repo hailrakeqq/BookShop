@@ -14,16 +14,6 @@ public class BookService : IMongoBookRepository
 
     private IMongoCollection<Book> _books => _context.MongoDatabase.GetCollection<Book>("Books");
 
-    public bool CheckIfExist(Book item)
-    {
-        // var existBook = _books.Find(u => u.Title == item.Title).FirstOrDefault();
-        var filter = Builders<Book>.Filter.Eq("title", item.Title);
-        var existBook = _books.Find(filter).FirstOrDefault();
-        if (existBook != null)
-            return true;
-
-        return false;
-    }
 
     public IEnumerable<Book> GetList()
     {
@@ -57,6 +47,17 @@ public class BookService : IMongoBookRepository
     {
         var book = GetItem(id);
         if (book != null) _books.DeleteOne(u => u == book);
+    }
+    
+
+    public bool CheckIfExist(Book item)
+    {
+        var filter = Builders<Book>.Filter.Eq("title", item.Title);
+        var existBook = _books.Find(filter).FirstOrDefault();
+        if (existBook != null)
+            return true;
+
+        return false;
     }
 
     public void Dispose()

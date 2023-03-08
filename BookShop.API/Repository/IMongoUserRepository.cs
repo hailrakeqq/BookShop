@@ -4,8 +4,8 @@ namespace BookShop.API.Repository;
 
 public interface IMongoUserRepository : IRepository<User>
 {
-    bool CheckIfExist(User item);
-    Task<List<Book>> GetUserWishListOrLibrary(string typeOfRequest, string id);
+    List<Book> GetUserWishlist(string id);
+    List<Book> GetUserLibrary(string id);
     bool CheckIfBookExistInWishList(string userId, string bookId);
     bool CheckIfBookExistInLibrary(string userId, string bookId);
     void AddBookToUserWishList(string id, Book book);

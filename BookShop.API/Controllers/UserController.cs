@@ -9,12 +9,10 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class UserController : Controller
 {
-    private readonly IMongoBookRepository _bookRepository;
     private readonly IMongoUserRepository _userRepository;
 
-    public UserController(IMongoBookRepository bookRepository, IMongoUserRepository userRepository)
+    public UserController(IMongoUserRepository userRepository)
     {
-        _bookRepository = bookRepository;
         _userRepository = userRepository;
     }
 
@@ -22,7 +20,7 @@ public class UserController : Controller
     [Route("GetUserWishlist/{id:Guid}")]
     public IActionResult GetUserWishList([FromRoute] string id)
     {
-        var wishlist = _userRepository.GetUserWishListOrLibrary(nameof(GetUserWishList), id);
+        var wishlist = _userRepository.GetUserWishlist(id);
         if (wishlist != null)
             return Ok(wishlist);
 
@@ -33,7 +31,7 @@ public class UserController : Controller
     [Route("GetUserLibrary/{id:Guid}")]
     public IActionResult GetUserLibrary([FromRoute] string id)
     {
-        var library = _userRepository.GetUserWishListOrLibrary(nameof(GetUserLibrary), id);
+        var library = _userRepository.GetUserLibrary(id);
         if (library != null)
             return Ok(library);
 
