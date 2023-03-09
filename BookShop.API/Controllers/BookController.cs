@@ -2,6 +2,7 @@ using BookShop.API.Authorization;
 using BookShop.API.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BookShop.API.Controllers;
 
@@ -23,7 +24,18 @@ public class BookController : Controller
     [AllowAnonymous]
     public IActionResult GetBookList()
     {
-        return Ok(_bookRepository.GetList().ToList());
+        return Ok(_bookRepository.GetList());
+    }
+    
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("GetSellerBookCollection/{id:Guid}")]
+    public IActionResult GetCurrentSellerBookList([FromRoute] string id)
+    {
+        var bookCollection = _bookRepository.GetList().Where(b => b.SellerId == id);
+        if(bookCollection.IsNullOrEmpty())
+            return NoContent();
+        return Ok(bookCollection);
     }
 
     [HttpGet]

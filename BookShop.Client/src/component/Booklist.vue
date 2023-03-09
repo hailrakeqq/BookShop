@@ -1,28 +1,36 @@
 <template>
-  <div v-if="books.length > 0">
-    <h3>Book list</h3>
-    <Bookcomponent v-for="book in books" :book="book" :key="book.id" @remove="$emit('remove', book)"/>
+  <div class="main">
+<!--    v-if="books.length > 0"-->
+    <BookItem 
+        class="book" 
+        v-for="book in books" 
+        :book="book" 
+        :key="book.id"/>
   </div>
-  <h2 v-else style="color: red">Book list is empty</h2>
+<!--  <h2 v-else style="color: red">Book list is empty</h2>-->
 </template>
 
 <script lang="ts">
-import Bookcomponent from "@/component/Bookcomponent.vue";
+import BookItem from "@/component/BookItem.vue";
 export default {
-  components: {Bookcomponent},
+  components: {BookItem},
   props: {
     books: {
       type: Array,
       required: true
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
-.book{
-  padding: 15px;
-  border: 2px solid teal;
-  margin-top: 15px;
+.main{
+  /*padding-left: 300px;*/
+  padding: 50px;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 </style>

@@ -2,6 +2,7 @@ using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BookShop.API.Controllers;
 
@@ -16,7 +17,7 @@ public class SellerController : Controller
     {
         _bookRepository = bookRepository;
     }
-    
+
     [HttpPost]
     [Route("AddBook")]
     public IActionResult AddBook([FromBody] Book book)
@@ -31,7 +32,8 @@ public class SellerController : Controller
 
         return Conflict("Book with these title already exist");
     }
-
+    
+    //TODO: maybe i should add id to route for change book data, anyway i must test it
     [HttpPut]
     [Route("ChangeBookData")]
     public IActionResult ChangeBookData(Book book)
@@ -46,6 +48,7 @@ public class SellerController : Controller
         return NotFound();
     }
 
+    //TODO: i think i should change logic (delete by id)
     [HttpDelete]
     [Route("DeleteBook/{id:Guid}")]
     public IActionResult DeleteBook(Book book)
