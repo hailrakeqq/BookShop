@@ -1,13 +1,12 @@
 <template>
-  <div class="main">
-<!--    v-if="books.length > 0"-->
+  <div class="main" v-if="books.length > 0">
     <BookItem 
         class="book" 
-        v-for="book in books" 
-        :book="book" 
+        v-for="book in books"
+        :book="book"
         :key="book.id"/>
   </div>
-<!--  <h2 v-else style="color: red">Book list is empty</h2>-->
+  <h2 v-else style="color: red">Book list is empty</h2>
 </template>
 
 <script lang="ts">
@@ -17,6 +16,10 @@ export default {
   props: {
     books: {
       type: Array,
+      required: true
+    },
+    images: {
+      type: Map,
       required: true
     }
   },

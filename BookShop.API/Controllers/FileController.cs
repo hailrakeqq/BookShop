@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BookShop.Tools;
 
 namespace BookShop.API.Controllers;
 
@@ -7,6 +8,35 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class FileController : Controller
 {
+    //TODO: create function for send list of image to client && create dictionary instead of list, to save book name
+    [HttpGet]
+    [Route("GetAllBookCover")]
+    public IActionResult SendAllBookCover()
+    {
+        Dictionary<string, byte[]> BookCoverCollection = new Dictionary<string, byte[]>();
+        string[] filesCollection = Directory.GetFiles("bookCover", "*.jpg");
+
+        foreach (var file in filesCollection)
+        {
+            var fileName = file.Split('/');
+            BookCoverCollection.Add(fileName[1],System.IO.File.ReadAllBytes(file));
+        }
+
+        var imagesArchive = Toolchain.CreateZipArchiveFromFilesList(BookCoverCollection, "bookCovers.zip");
+        return new FileContentResult(imagesArchive, "application/zip")
+        {
+            FileDownloadName = "bookCovers.zip"
+        };
+    }
+    
+    [HttpGet]
+    [Route("GetBookCoverByName/{BookName}")]
+    public IActionResult SendBookCoverByName([FromRoute] string BookName)
+    {
+        byte[] requestedImage = System.IO.File.ReadAllBytes($"bookCover/{BookName}.jpg");
+        return new FileContentResult(requestedImage, "image/jpeg");
+    }
+
     [HttpPost]
     [Route("SaveBookCover")]
     [Authorize]

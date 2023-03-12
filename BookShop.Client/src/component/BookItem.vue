@@ -1,8 +1,7 @@
 <template>
   <div class="book">
     <div class="img">
-      <!--      img-->
-      <p>img item</p>
+      <img :src="book.imageLink"/>
     </div>
     <div class="text_data">
       <h2>{{book.title}}</h2>
@@ -23,7 +22,7 @@ export default {
     book: {
       type: Object,
       required: true
-    }
+    },
   }
 }
 </script>
@@ -41,7 +40,7 @@ export default {
 
 img {
   max-width: 100%;
-  height: auto;
+  height: 300px;
 }
 
 h3 {

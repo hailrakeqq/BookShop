@@ -1,12 +1,14 @@
 <template>
   <h1>My test book stock</h1>
-  <booklist :books="books"  v-if="!isBookLoading"></booklist>
+  <booklist :books="books" :images="images" v-if="!isBookLoading"></booklist>
   <div v-else>Loading...</div>
 
 </template>
 
 <script lang="ts">
 import Booklist from "@/component/Booklist.vue";
+import {getImagesArrayFromServer} from '../../scripts/getImagesArrayFromServer'
+
 export default {
   name: "Stock",
   components:{
@@ -15,6 +17,7 @@ export default {
   data(){
     return{
       books: [],
+      images: Map,
       isBookLoading: false,
     }
   },
@@ -34,9 +37,23 @@ export default {
         this.isBookLoading = false
       }
     },
+    findCoverForBookByBookTitle(){
+      this.books.forEach(book => {
+        for (const [key, value] of this.images.entries()) {
+          if (key === book.title) 
+            book.imageLink = value;
+        }
+      })
+    },
+    loadBookAndImages(){
+      this.getBookCollectionBySellerId(localStorage.getItem('id'));
+      getImagesArrayFromServer()
+          .then(images => {this.images = images})
+          .then(() => this.findCoverForBookByBookTitle());
+    }
   },
   mounted() {
-    this.getBookCollectionBySellerId(localStorage.getItem('id'));
+    this.loadBookAndImages();
   }
 }
 </script>

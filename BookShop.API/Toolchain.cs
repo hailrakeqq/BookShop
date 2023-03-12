@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,6 +14,27 @@ public static class Toolchain
             var hash = BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
 
             return hash;
+        }
+    }
+
+    public static byte[] CreateZipArchiveFromFilesList(Dictionary<string, byte[]> fileDataDictionary, string archiveName)
+    {
+        using (MemoryStream archiveStream = new MemoryStream())
+        {
+            using (ZipArchive archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var fileData in fileDataDictionary)
+                {
+                    string fileName = fileData.Key; // you can change the file extension or name as needed
+                    ZipArchiveEntry entry = archive.CreateEntry(fileName);
+                    using (Stream entryStream = entry.Open())
+                    {
+                        entryStream.Write(fileData.Value, 0, fileData.Value.Length);
+                    }
+                }
+            }
+
+            return archiveStream.ToArray();
         }
     }
 }

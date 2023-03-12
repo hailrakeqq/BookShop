@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Headers;
 using BookShop.API.Authorization;
 using BookShop.API.Repository;
 using Microsoft.AspNetCore.Authorization;
@@ -41,12 +43,22 @@ public class BookController : Controller
     [HttpGet]
     [AllowAnonymous]
     [Route("GetBookById/{id:Guid}")]
-    public IActionResult GetBookById(string id)
+    public IActionResult GetBookAndBookCoverById([FromRoute] string id)
     {
         var book = _bookRepository.GetItem(id);
-
         if (book != null)
+        {
+            byte[] bookCoverData = System.IO.File.ReadAllBytes($"bookCover/{book.Title}.jpg");
+            if (bookCoverData.IsNullOrEmpty())
+            {
+                bookCoverData = System.IO.File.ReadAllBytes($"bookCover/notFound.jpg");
+            }
+            //
+            // var json = Newtonsoft.Json.JsonConvert.SerializeObject(book);
+            // var response = new FileContentResult(bookCoverData, "image/jpeg");
+            // response
             return Ok(book);
+        }
 
         return NotFound();
     }
