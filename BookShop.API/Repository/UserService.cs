@@ -145,7 +145,7 @@ public class UserService : IMongoUserRepository
 
     public void Update(User item)
     {
-        _users.ReplaceOne(item.Id, item);
+        _users.ReplaceOne(Builders<User>.Filter.Eq("_id", ObjectId.Parse(item.Id)), item);
     }
 
     public void Delete(string id)

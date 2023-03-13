@@ -22,7 +22,7 @@ public class SellerController : Controller
     [Route("AddBook")]
     public IActionResult AddBook([FromBody] Book book)
     {
-        var currentBook = _bookRepository.CheckIfExist(book);
+        var currentBook = _bookRepository.isBookExistWithCurrentTitleFindByItem(book);
 
         if (!currentBook)
         {
@@ -35,12 +35,13 @@ public class SellerController : Controller
     
     //TODO: maybe i should add id to route for change book data, anyway i must test it
     [HttpPut]
-    [Route("ChangeBookData")]
-    public IActionResult ChangeBookData(Book book)
+    [Route("ChangeBookData/{id:Guid}")]
+    public IActionResult ChangeBookData([FromRoute] string id, [FromBody] Book book)
     {
-        var currentBook = _bookRepository.CheckIfExist(book);
-        if (currentBook)
+        var currentBook = _bookRepository.GetItem(id);
+        if (currentBook != null)
         {
+            book.Id = id;
             _bookRepository.Update(book);
             return Ok("Book has been successfully update");
         }
@@ -51,12 +52,12 @@ public class SellerController : Controller
     //TODO: i think i should change logic (delete by id)
     [HttpDelete]
     [Route("DeleteBook/{id:Guid}")]
-    public IActionResult DeleteBook(Book book)
+    public IActionResult DeleteBook([FromRoute] string id)
     {
-        var currentBook = _bookRepository.CheckIfExist(book);
-        if (currentBook)
+        var currentBook = _bookRepository.GetItem(id);
+        if (currentBook != null)
         {
-            _bookRepository.Delete(book.Id!);
+            _bookRepository.Delete(id);
             return Ok("Book has been successfully delete");
         }
 

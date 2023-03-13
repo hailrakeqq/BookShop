@@ -43,24 +43,10 @@ public class BookController : Controller
     [HttpGet]
     [AllowAnonymous]
     [Route("GetBookById/{id:Guid}")]
-    public IActionResult GetBookAndBookCoverById([FromRoute] string id)
+    public IActionResult GetBookById([FromRoute] string id)
     {
         var book = _bookRepository.GetItem(id);
-        if (book != null)
-        {
-            byte[] bookCoverData = System.IO.File.ReadAllBytes($"bookCover/{book.Title}.jpg");
-            if (bookCoverData.IsNullOrEmpty())
-            {
-                bookCoverData = System.IO.File.ReadAllBytes($"bookCover/notFound.jpg");
-            }
-            //
-            // var json = Newtonsoft.Json.JsonConvert.SerializeObject(book);
-            // var response = new FileContentResult(bookCoverData, "image/jpeg");
-            // response
-            return Ok(book);
-        }
-
-        return NotFound();
+        return book != null ? Ok(book) : NotFound();
     }
 
     [HttpPost]

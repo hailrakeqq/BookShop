@@ -1,4 +1,5 @@
 using BookShop.API.Model.Entity;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BookShop.API.Repository;
@@ -33,7 +34,7 @@ public class BookService : IMongoBookRepository
 
     public void Update(Book item)
     {
-        _books.ReplaceOne(item.Id, item);
+        _books.ReplaceOne(Builders<Book>.Filter.Eq("_id", item.Id), item);
     }
 
     public void UpdateOnBuy(Book book, int countBooks)
@@ -50,14 +51,16 @@ public class BookService : IMongoBookRepository
     }
     
 
-    public bool CheckIfExist(Book item)
+    public bool isBookExistWithCurrentTitleFindByItem(Book item)
     {
-        var filter = Builders<Book>.Filter.Eq("title", item.Title);
-        var existBook = _books.Find(filter).FirstOrDefault();
-        if (existBook != null)
-            return true;
+        var existBook = _books.Find(Builders<Book>.Filter.Eq("title", item.Title)).FirstOrDefault();
+        return existBook != null ? true : false;
+    }
 
-        return false;
+    public bool IsBookExistFindById(string id)
+    {
+        var existBook = _books.Find(Builders<Book>.Filter.Eq("_id", id)).FirstOrDefault();
+        return existBook != null ? true : false;
     }
 
     public void Dispose()

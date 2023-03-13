@@ -120,7 +120,7 @@ export default {
         return false;
       }
     },
-    resetFileInput() {
+    resetFileInput() { //TODO: fix it
       this.uploadReady = false;
       this.$nextTick(() => {
         this.uploadReady = true;

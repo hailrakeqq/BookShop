@@ -36,7 +36,6 @@ public static class AuthorizationHandlerExtensions
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
             CheckCurrentUserRequirement requirement)
         {
-            // TODO: Check user if the user is locked out as well
             if (_currentUser.User is not null)
                 context.Succeed(requirement);
 

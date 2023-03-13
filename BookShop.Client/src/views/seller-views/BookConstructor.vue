@@ -1,10 +1,13 @@
 <template>
-  <div class="form">
+  <div class="form" v-if="!this.isPageLoading">
     
   <h1>Test Book Constructor</h1>
     <MyForm class="form-content">
       <div class="form-item">
         <div>
+          <div v-if="isChangePage">
+            <p>You can change image if you want.</p> 
+          </div>
           <p>Upload a book cover</p>
           <button @click="showFileSelect = !showFileSelect">Select a file</button>
         </div>
@@ -44,15 +47,18 @@
       </div>
       <div class="form-item">
         <label for="pages">Pages: <span v-if="!isPagesValid">Enter Correct Number of Pages</span></label>
-        <my-input type="number" class="pages" v-model="book.pages"/>
+        <my-input type="number" class="pages" v-model="book.countOfPages"/>
       </div>
       <div class="form-item">
         <label for="count">Count in stock: <span v-if="!isCountInStockValid">Enter Correct Item Of Book</span></label>
         <my-input type="number" class="count" v-model="book.countInStock"/>
       </div>
-      
-      <my-button @click="insertBookToDB">Add Book!</my-button>
+      <my-button v-if="isChangePage" @click="updateBookTextData(book.id)">Update Book!</my-button>
+      <my-button v-else @click="insertBookToDB">Add Book!</my-button>
     </MyForm>
+  </div>
+  <div v-else>
+    <h3>Loading...</h3>
   </div>
 </template>
 
@@ -69,6 +75,7 @@ name: "BookConstructor",
   components: {MyInput, MyButton, MyForm, BookGenreList, FileUpload},
   data(){
     return{
+      book: {},
       sellerData: {
         jwtToken: localStorage.getItem('jwtToken'),
         id: localStorage.getItem('id')
@@ -91,17 +98,9 @@ name: "BookConstructor",
       fileInfo: null,
       fileSelected: false,
       showFileSelect: false,
-      book: {
-        title: '',
-        description: '',
-        author: '',
-        genre: [],
-        price: 0,
-        yearOfPublication: 0,
-        pages: 0,
-        countInStock: 0,
-      },
-      isRequestStatus200: []
+      isRequestStatus200: [],
+      isPageLoading: false,
+      isChangePage: false
     }
   },
   computed: {
@@ -121,11 +120,14 @@ name: "BookConstructor",
       return this.book.yearOfPublication <= new Date().getFullYear()
     },
     isPagesValid(): boolean{
-      return this.book.pages > 0
+      return this.book.countOfPages > 0
     },
     isCountInStockValid(): boolean{
       return this.book.countInStock > 0
-    }
+    },
+    isImageHasBeenAdded(): boolean{
+      return this.file != null
+    },
   }, 
   methods: {
     getUploadedData(file, fileInfo) {
@@ -136,7 +138,7 @@ name: "BookConstructor",
     },
     isDataValid(){
       return this.isTitleValid && this.isDescriptionValid && this.isAuthorValid && this.isPriceValid &&
-          this.isPagesValid && this.isYearOfPublicationValid && this.isCountInStockValid
+          this.isPagesValid && this.isYearOfPublicationValid && this.isCountInStockValid && this.isImageHasBeenAdded
     },
     async sendBookCoverFileToServer() {
       const formData = new FormData()
@@ -165,9 +167,10 @@ name: "BookConstructor",
             author: this.book.author,
             price: this.book.price,
             yearOfPublication: this.book.yearOfPublication,
-            countOfPages: this.book.pages,
+            countOfPages: this.book.countOfPages,
             countInStock: this.book.countInStock
           }
+          console.log(book)
         await axios.post('http://localhost:5045/api/Seller/AddBook', JSON.stringify(book),{
           headers: {
             "Authorization": `bearer ${this.sellerData.jwtToken}`,
@@ -185,7 +188,7 @@ name: "BookConstructor",
     isRequestSuccessfully(): boolean{
       return ((this.isRequestStatus200[0] && this.isRequestStatus200[1]) == true)
     },
-     insertBookToDB(){
+    insertBookToDB(){
       if(this.isDataValid()) {
         Promise.all([this.sendBookCoverFileToServer(), this.sendBookTextDataToServer()])
             .then(() => {
@@ -196,6 +199,63 @@ name: "BookConstructor",
       } else {
         alert("data is not valid")
       }
+    },
+    loadPage(){
+      try {
+        this.isPageLoading = true
+        this.getBookById(this.$route.params.bookId)
+      } catch (e) {
+        console.log(e)
+      } finally {
+        this.isPageLoading = false 
+      }
+    },
+    async getBookById(id){
+        const request = await axios.get(`http://localhost:5045/api/Book/GetBookById/${id}`)
+        this.book = request.data
+    },
+    async updateBookTextData(id) {
+      try {
+        const book = {
+          Id: id,
+          sellerId: this.sellerData.id,
+          title: this.book.title,
+          description: this.book.description,
+          genre: this.book.genre,
+          author: this.book.author,
+          price: this.book.price,
+          yearOfPublication: this.book.yearOfPublication,
+          countOfPages: this.book.countOfPages,
+          countInStock: this.book.countInStock
+        }
+        await axios.put(`http://localhost:5045/api/Seller/ChangeBookData/${id}`, JSON.stringify(book),{
+          headers: {
+            "Authorization": `bearer ${this.sellerData.jwtToken}`,
+            "seller-id": `${this.sellerData.id}`,
+            "Content-Type": "application/json",
+          },
+        }).then(Response => Response.status === 200 ?  this.$router.push('/stock') : alert('error'))
+      } catch (e){
+        console.log(e)
+      }
+    },
+  },
+  mounted() {
+    if(window.location.href.endsWith('/bookconstructor')){
+      this.isChangePage = false
+      this.book = {
+        title: '',
+        description: '',
+        genre: [],
+        author: '',
+        price: '',
+        yearOfPublication: '',
+        countOfPages: '',
+        countInStock: ''
+      }
+    } else {
+      this.isChangePage = true
+      this.loadPage()
     }
   }
 }
@@ -220,3 +280,5 @@ name: "BookConstructor",
   display: flex;
 }
 </style>
+
+//TODO: test save with image(and replace image)

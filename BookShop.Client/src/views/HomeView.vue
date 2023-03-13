@@ -50,8 +50,8 @@ export default {
     async getBookList(){
       try{
         this.isBookLoading = true
-        const responce = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
-        this.books = responce.data
+        const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+        this.books = response.data
       } catch (e) {
         alert("error")
       } finally {

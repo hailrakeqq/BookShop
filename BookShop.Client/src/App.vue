@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+//TODO: axios for all request
 </script>
 
 <template>

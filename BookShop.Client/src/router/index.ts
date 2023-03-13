@@ -25,9 +25,14 @@ const router = createRouter({
       component: RegisterForm
     },
     {
+      path: '/changeBookData/:bookId',
+      name: 'changebookdata',
+      component: BookConstuctor
+    },
+    {
       path: '/bookconstructor',
       name: 'bookconstructor',
-      component: BookConstuctor 
+      component: BookConstuctor
     },
     {
       path: '/stock',

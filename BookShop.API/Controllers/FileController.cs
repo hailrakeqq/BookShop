@@ -8,7 +8,6 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class FileController : Controller
 {
-    //TODO: create function for send list of image to client && create dictionary instead of list, to save book name
     [HttpGet]
     [Route("GetAllBookCover")]
     public IActionResult SendAllBookCover()
@@ -29,6 +28,7 @@ public class FileController : Controller
         };
     }
     
+    //TODO: if image with current name exist, replace it!(func for update)
     [HttpGet]
     [Route("GetBookCoverByName/{BookName}")]
     public IActionResult SendBookCoverByName([FromRoute] string BookName)

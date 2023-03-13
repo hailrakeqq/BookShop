@@ -6,23 +6,40 @@
     <div class="text_data">
       <h2>{{book.title}}</h2>
       <h3>{{book.price}} грн.</h3>
-      <my-button>Test Button</my-button>
+      <div v-if="userRole === 'seller'">
+        <my-button @click="redirectToChangeBookDataPage(book.id)">Update</my-button>
+        <my-button>Delete</my-button>
+      </div>
+      <div v-else>
+        <my-button>Buy book</my-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import MyButton from "@/component/UI/MyButton.vue";
+import '../router'
 export default {
   components: {
     MyButton
   },
   name: "bookItem",
+  data(){
+    return{
+      userRole: localStorage.getItem('role')  
+    }
+  },
   props:{
     book: {
       type: Object,
       required: true
     },
+  },
+  methods:{
+    redirectToChangeBookDataPage(id){
+      this.$router.push({name: 'changebookdata', params: {bookId: id}})
+    }
   }
 }
 </script>
