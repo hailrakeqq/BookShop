@@ -11,9 +11,9 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class SellerController : Controller
 {
-    private readonly IMongoBookRepository _bookRepository;
-
-    public SellerController(IMongoBookRepository bookRepository)
+    private readonly IBookRepository _bookRepository;
+    
+    public SellerController(IBookRepository bookRepository)
     {
         _bookRepository = bookRepository;
     }
@@ -27,13 +27,13 @@ public class SellerController : Controller
         if (!currentBook)
         {
             _bookRepository.Create(book);
+            
             return Ok("Book has been successfully add");
         }
 
         return Conflict("Book with these title already exist");
     }
     
-    //TODO: maybe i should add id to route for change book data, anyway i must test it
     [HttpPut]
     [Route("ChangeBookData/{id:Guid}")]
     public IActionResult ChangeBookData([FromRoute] string id, [FromBody] Book book)

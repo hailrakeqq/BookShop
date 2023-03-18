@@ -24,6 +24,7 @@ import MyButton from "@/component/UI/MyButton.vue";
 import MyInput from "@/component/UI/MyInput.vue";
 import MyForm from "@/component/Form.vue"
 import '../router'
+import axios from 'axios'
 export default {
   name: 'LoginForm',
   components: {MyInput, MyButton, MyForm},
@@ -47,17 +48,19 @@ export default {
           emailOrLogin: this.emailOrName,
           password: this.password
         }
-        await fetch('http://localhost:5045/api/Auth/Login',{
-          method: 'POST',
+        await axios.post('http://localhost:5045/api/Auth/Login', JSON.stringify(userData), {
           headers:{
             'content-type': 'application/json'
-          },
-          body: JSON.stringify(userData)
-        }).then(response => response.status == 200 ?  response.json() : alert("User was not found."))
-            .then(data => {
-              this.saveUserDataToLocalStorage(data)
-              setTimeout(() => this.$router.go(), 100)
-              this.$router.push('/')
+          }
+        }).then(Response => {
+              if(Response.status === 200){
+                this.saveUserDataToLocalStorage(Response.data)
+                setTimeout(() => this.$router.go(), 100)
+                this.$router.push('/')
+              }
+              else{
+                alert("User was not found.")
+              }
             })
       }
     }

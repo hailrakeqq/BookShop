@@ -50,6 +50,11 @@ public class FileController : Controller
         var fileName = Path.GetFileName(requestContent.Files[0].FileName);
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "bookCover", $"{fileName}.jpg");
         
+        if (System.IO.File.Exists(filePath))
+        {
+            System.IO.File.Delete(filePath);
+        }
+        
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             file.CopyTo(stream);

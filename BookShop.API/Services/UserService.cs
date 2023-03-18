@@ -1,19 +1,20 @@
 using BookShop.API.Model.Entity;
+using BookShop.API.Repository;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace BookShop.API.Repository;
+namespace BookShop.API.Service;
 
-public class UserService : IMongoUserRepository
+public class UserService : IUserRepository
 {
     private readonly ApplicationDbContext _context;
+    private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
 
     public UserService(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
 
     private IMongoCollection<BsonDocument> _library =>
         _context.MongoDatabase.GetCollection<BsonDocument>("UsersLibrary");

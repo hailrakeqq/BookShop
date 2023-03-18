@@ -2,7 +2,7 @@ using BookShop.API.Model.Entity;
 
 namespace BookShop.API.Repository;
 
-public interface IMongoUserRepository : IRepository<User>
+public interface IUserRepository : IRepository<User>
 {
     List<Book> GetUserWishlist(string id);
     List<Book> GetUserLibrary(string id);

@@ -1,10 +1,10 @@
 <template>
-<h1>my {{name}}</h1>
+<h1>My account-page</h1>
 </template>
 
 <script>
 export default {
-name: "Wishlist"
+name: "AccountPage"
 }
 </script>
 

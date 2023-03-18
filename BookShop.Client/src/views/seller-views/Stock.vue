@@ -32,6 +32,8 @@ export default {
           }
         }).then(data => data.json()).then(data => this.books = data)
       } catch (e) {
+        if(e.message == "JSON.parse: unexpected end of data at line 1 column 1 of the JSON data")
+          return
         alert("error")
       } finally {
         this.isBookLoading = false

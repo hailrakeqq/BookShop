@@ -7,16 +7,13 @@ import { RouterLink, RouterView } from 'vue-router'
   <header>
     <div class="wrapper">
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink v-if="!jwtToken" to="/login">Login</RouterLink>
-        <a @click="logout" v-else>Logout</a>
-        <div id="user-header" v-if="role == 'user'">
-          <RouterLink to="/wishlist">My Wishlist</RouterLink>
-          <RouterLink to="/library">My Library</RouterLink>
+        <RouterLink class="item" to="/">Home</RouterLink>
+        <RouterLink class="item" v-if="!jwtToken" to="/login">Login</RouterLink>
+        <div v-else-if="role === 'user'">
+          <my-select v-model="selectedSort" :disabledValue="username" :options="sortOptionsForUser" ></my-select>
         </div>
-        <div id="seller-header" v-else-if="role == 'seller'">
-          <RouterLink to="/stock">My Stock</RouterLink>
-          <RouterLink to="/bookconstructor">Add Book</RouterLink>
+        <div v-else-if="role === 'seller'">
+          <my-select v-model="selectedSort" :disabledValue="username" :options="sortOptionsForSeller" ></my-select>
         </div>
       </nav>
     </div>
@@ -24,15 +21,34 @@ import { RouterLink, RouterView } from 'vue-router'
   <RouterView />
 </template>
 <script lang="ts">
+import MySelect from "@/component/UI/MySelect.vue";
 import './router'
   export default {
+  components: {
+    MySelect
+  },
     data(){
       return {
         email: localStorage.getItem("email"),
         id: localStorage.getItem("id"),
         jwtToken: localStorage.getItem("jwtToken"),
         role: localStorage.getItem("role"),
-        username: localStorage.getItem("username")
+        username: localStorage.getItem("username"),
+        selectedSort: '',
+        sortOptionsForUser: [
+          {value: 'account', name: 'Account'},
+          {value: 'library', name: 'Library'},
+          {value: 'wishlist', name: 'Wishlist'},
+          {value: 'settings', name: 'Settings'},
+          {value: 'logout', name: 'Logout'},
+        ],
+        sortOptionsForSeller: [
+          {value: 'account', name: 'Account'},
+          {value: 'addbook', name: 'Add book'},
+          {value: 'stock', name: 'Stock'},
+          {value: 'settings', name: 'Settings'},
+          {value: 'logout', name: 'Logout'},
+        ]
       }
     },
     computed:{
@@ -42,10 +58,90 @@ import './router'
         localStorage.clear()
         this.$router.go()
         this.$router.push('/')
+      },
+      redirectToAccount(){
+        this.$router.push(`/user/${this.id}`)
+      },
+      redirectToSettings(){
+        this.$router.push('/settings')
+      },
+      redirectToBookConstructor(){
+        if(this.role === 'seller')
+          this.$router.push('/bookconstructor')
+        else 
+          alert('You haven\'t access to this page') //in future create forbidden page
+      },
+      redirectToStock(){
+        if(this.role === 'seller')
+          this.$router.push('/stock')
+        else
+          alert('You haven\'t access to this page') //in future create forbidden page
+      },
+      redirectToWishist(){
+        if(this.role === 'user')
+          this.$router.push({name: 'wishlist', params: {userid: this.id}})
+        else
+          alert('You haven\'t access to this page') //in future create forbidden page
+      },
+      redirectToLibrary(){
+        if(this.role === 'user')
+          this.$router.push({name: 'library', params: {userid: this.id}})
+        else
+          alert('You haven\'t access to this page') //in future create forbidden page
+      }
+    },
+    watch: {
+      selectedSort(newValue){
+        console.log(newValue)
+        const action = newValue
+        
+        switch (action) {
+          case ('logout'):{
+            this.logout();
+            break;
+          }
+          case ('account'):{
+            this.redirectToAccount();
+            break;
+          }
+          case ('settings'):{
+            this.redirectToSettings();
+            break;
+          }
+          case ('addbook'):{
+            this.redirectToBookConstructor();
+            break;
+          }
+          case ('stock'):{
+            this.redirectToStock();
+            break;
+          }
+          case ('wishlist'):{
+            this.redirectToWishist();
+            break;
+          }
+          case ('library'):{
+            this.redirectToLibrary();
+            break;
+          }
+        }
       }
     }
   }
 </script>
 <style scoped>
-
+.wrapper{
+  /*padding: 5px;*/
+  /*background-color: black;*/
+  /*color: white;*/
+  background-color: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  margin: 20px 0;
+}
+.item{
+  padding-left: 30px;
+}
 </style>

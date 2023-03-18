@@ -1,21 +1,23 @@
 using BookShop.API.Model.Entity;
+using BookShop.API.Repository;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace BookShop.API.Repository;
+namespace BookShop.API.Service;
 
-public class BookService : IMongoBookRepository
+public class BookService : IBookRepository
 {
     private readonly ApplicationDbContext _context;
+    private IMongoCollection<Book> _books => _context.MongoDatabase.GetCollection<Book>("Books");
+    private readonly SellerService _sellerService;
 
-    public BookService(ApplicationDbContext context)
+    public BookService(ApplicationDbContext context, SellerService sellerService)
     {
         _context = context;
+        _sellerService = sellerService;
     }
 
-    private IMongoCollection<Book> _books => _context.MongoDatabase.GetCollection<Book>("Books");
-
-
+    
     public IEnumerable<Book> GetList()
     {
         return _books.Find(_ => true).ToList();
@@ -42,12 +44,14 @@ public class BookService : IMongoBookRepository
         var filter = Builders<Book>.Filter.Eq("Id", book.Id);
         var update = Builders<Book>.Update.Set("CountInStock", book.CountInStock - countBooks);
         _books.UpdateOne(filter, update);
+        _sellerService.UpdateCountOfSoldProduct(book.SellerId, countBooks);
     }
 
     public void Delete(string id)
     {
         var book = GetItem(id);
-        if (book != null) _books.DeleteOne(u => u == book);
+        if (book != null) 
+            _books.DeleteOne(Builders<Book>.Filter.Eq("_id", book.Id));
     }
     
 

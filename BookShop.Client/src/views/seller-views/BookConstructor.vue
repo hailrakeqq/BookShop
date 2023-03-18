@@ -53,8 +53,8 @@
         <label for="count">Count in stock: <span v-if="!isCountInStockValid">Enter Correct Item Of Book</span></label>
         <my-input type="number" class="count" v-model="book.countInStock"/>
       </div>
-      <my-button v-if="isChangePage" @click="updateBookTextData(book.id)">Update Book!</my-button>
-      <my-button v-else @click="insertBookToDB">Add Book!</my-button>
+      <my-button v-if="isChangePage" @click="updateBookDataRequest(book.id)">Update Book!</my-button>
+      <my-button v-else @click="insertBookToDBRequest">Add Book!</my-button>
     </MyForm>
   </div>
   <div v-else>
@@ -188,13 +188,25 @@ name: "BookConstructor",
     isRequestSuccessfully(): boolean{
       return ((this.isRequestStatus200[0] && this.isRequestStatus200[1]) == true)
     },
-    insertBookToDB(){
+    insertBookToDBRequest(){
       if(this.isDataValid()) {
         Promise.all([this.sendBookCoverFileToServer(), this.sendBookTextDataToServer()])
             .then(() => {
               if(this.isRequestSuccessfully())
                 alert("Book has been successfully add. Redirecting to stock")
                 this.$router.push('/stock')
+            })
+      } else {
+        alert("data is not valid")
+      }
+    },
+    updateBookDataRequest(id){
+      if(this.isDataValid()) {
+        Promise.all([this.sendBookCoverFileToServer(), this.updateBookTextData(id)])
+            .then(() => {
+              if(this.isRequestSuccessfully())
+                alert("Book has been successfully updated. Redirecting to stock")
+              this.$router.push('/stock')
             })
       } else {
         alert("data is not valid")
@@ -234,7 +246,7 @@ name: "BookConstructor",
             "seller-id": `${this.sellerData.id}`,
             "Content-Type": "application/json",
           },
-        }).then(Response => Response.status === 200 ?  this.$router.push('/stock') : alert('error'))
+        }).then(Response => Response.status === 200 ?  this.isRequestStatus200[1] = true : alert('error'))
       } catch (e){
         console.log(e)
       }

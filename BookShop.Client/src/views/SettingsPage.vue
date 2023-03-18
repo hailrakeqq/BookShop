@@ -1,10 +1,10 @@
 <template>
-<h1>my {{name}}</h1>
+<h1>Setting</h1>
 </template>
 
 <script>
 export default {
-name: "Wishlist"
+name: "UserSettings"
 }
 </script>
 

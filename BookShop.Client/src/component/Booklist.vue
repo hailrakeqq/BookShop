@@ -6,13 +6,14 @@
         :book="book"
         :key="book.id"/>
   </div>
-  <h2 v-else style="color: red">Book list is empty</h2>
+  <h2 v-else style="color: red">Book list is empty. You can add new book right now</h2>
 </template>
 
 <script lang="ts">
+import MyButton from "@/component/UI/MyButton.vue";
 import BookItem from "@/component/BookItem.vue";
 export default {
-  components: {BookItem},
+  components: {BookItem, MyButton},
   props: {
     books: {
       type: Array,
@@ -23,6 +24,11 @@ export default {
       required: true
     }
   },
+  methods:{
+    redirectToCreateBookPage(){
+      this.$router.push('/bookconstructor')
+    }
+  }
 }
 </script>
 

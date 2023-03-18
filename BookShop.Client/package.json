@@ -16,7 +16,8 @@
     "jszip": "^3.10.1",
     "pinia": "^2.0.32",
     "vue": "^3.2.47",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "vue-star-rating": "^2.1.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

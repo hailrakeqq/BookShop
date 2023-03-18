@@ -11,8 +11,8 @@ namespace BookShop.Test.ControllersTest;
 public class BookControllerTests
 {
     private static readonly CurrentUser currentUser = UserData.currentUser;
-    private readonly Mock<IMongoBookRepository> _mongoBookRepository = new();
-    private readonly Mock<IMongoUserRepository> _mongoUserRepository = new();
+    private readonly Mock<IBookRepository> _mongoBookRepository = new();
+    private readonly Mock<IUserRepository> _mongoUserRepository = new();
     private readonly BookController systemUnderTests;
 
     public BookControllerTests()

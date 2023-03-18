@@ -9,9 +9,9 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class UserController : Controller
 {
-    private readonly IMongoUserRepository _userRepository;
+    private readonly IUserRepository _userRepository;
 
-    public UserController(IMongoUserRepository userRepository)
+    public UserController(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }

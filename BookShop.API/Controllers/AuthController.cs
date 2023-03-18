@@ -22,7 +22,6 @@ public class AuthController : Controller
     }
 
     private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
-
     private IMongoCollection<UsersLibrary> _library =>
         _context.MongoDatabase.GetCollection<UsersLibrary>("UsersLibrary");
 
@@ -35,30 +34,53 @@ public class AuthController : Controller
     {
         var currentUser = _users.Find(u => u.Email == user.Email!.ToLower() ||
                                            u.Username == user.Username!.ToLower()).FirstOrDefault();
-
+        
         if (currentUser == null)
         {
-            user.Email = user.Email!.ToLower();
-            user.Username = user.Username!.ToLower();
-            user.Id = Guid.NewGuid().ToString();
-            user.Password = Toolchain.GenerateHash(user.Password!);
+            user = new User
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = user.Email!.ToLower(),
+                Username = user.Username!.ToLower(),
+                Password = Toolchain.GenerateHash(user.Password!),
+                Role = user.Role
+            };
 
-            var usersLibrary = new UsersLibrary();
-            usersLibrary.Id = Guid.NewGuid().ToString();
-            usersLibrary.OwnerId = user.Id;
-            usersLibrary.BoughtBook = new HashSet<Book>();
+            switch (user.Role)
+            {
+                case "seller":
+                    var seller = new Seller
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        Username = user.Username,
+                        Password = user.Password,
+                        Role = user.Role,
+                        CountOfProduct = 0,
+                        CountOfSoldProduct = 0
+                    };
+                    await _users.InsertOneAsync(seller);
+                    return Ok(seller);
 
-            var usersWishList = new UsersWishlist();
-            usersWishList.Id = Guid.NewGuid().ToString();
-            usersWishList.OwnerId = user.Id;
-            usersWishList.Wishlist = new HashSet<Book>();
-
-            await _users.InsertOneAsync(user);
-            await _library.InsertOneAsync(usersLibrary);
-            await _wishList.InsertOneAsync(usersWishList);
-            return Ok(user);
+                default:
+                    var usersLibrary = new UsersLibrary
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OwnerId = user.Id,
+                        BoughtBook = new HashSet<Book>()
+                    };
+                    var usersWishlist = new UsersWishlist
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OwnerId = user.Id,
+                        Wishlist = new HashSet<Book>()
+                    };
+                    await _users.InsertOneAsync(user);
+                    await _library.InsertOneAsync(usersLibrary);
+                    await _wishList.InsertOneAsync(usersWishlist);
+                    return Ok(user);
+            }
         }
-
         return Conflict("Account with these email or username already exist");
     }
 

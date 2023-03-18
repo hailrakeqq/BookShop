@@ -13,10 +13,10 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class BookController : Controller
 {
-    private readonly IMongoBookRepository _bookRepository;
-    private readonly IMongoUserRepository _userRepository;
+    private readonly IBookRepository _bookRepository;
+    private readonly IUserRepository _userRepository;
 
-    public BookController(IMongoBookRepository bookRepository, IMongoUserRepository userRepository)
+    public BookController(IBookRepository bookRepository, IUserRepository userRepository)
     {
         _bookRepository = bookRepository;
         _userRepository = userRepository;

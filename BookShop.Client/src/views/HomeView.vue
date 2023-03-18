@@ -8,7 +8,7 @@
     <my-dialog v-model:show="dialogVisible" @click="hideDialog">
       <Form @create="createBook"/>
     </my-dialog>
-    <Booklist :books="books" @remove="removeBook" v-if="!isBookLoading"/>
+    <Booklist :books="books"  v-if="!isBookLoading"/>
     <div v-else>Loading...</div>
   </div>
 </template>
@@ -21,7 +21,7 @@ import MyDialog from "@/component/UI/MyDialog.vue";
 import MyButton from "@/component/UI/MyButton.vue";
 import axios from "axios";
 import MySelect from "@/component/UI/MySelect.vue";
-
+import {getImagesArrayFromServer} from '../scripts/getImagesArrayFromServer'
 export default {
   components: {
     MySelect,
@@ -33,6 +33,7 @@ export default {
   data(){
     return{
       books: [],
+      images: Map,
       dialogVisible: false,
       isBookLoading: false,
       selectedSort: '',
@@ -50,7 +51,7 @@ export default {
     async getBookList(){
       try{
         this.isBookLoading = true
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+        const response = await axios.get('http://localhost:5045/api/Book')
         this.books = response.data
       } catch (e) {
         alert("error")
@@ -66,10 +67,24 @@ export default {
     },
     showDialog(){
       this.dialogVisible = true;
+    },
+    findCoverForBookByBookTitle(){
+      this.books.forEach(book => {
+        for (const [key, value] of this.images.entries()) {
+          if (key === book.title)
+            book.imageLink = value;
+        }
+      })
+    },
+    loadBookAndImages(){
+      this.getBookList()
+      getImagesArrayFromServer()
+          .then(images => {this.images = images})
+          .then(() => this.findCoverForBookByBookTitle());
     }
   },
   mounted() {
-    this.getBookList();
+    this.loadBookAndImages();
   }
 }
 </script>

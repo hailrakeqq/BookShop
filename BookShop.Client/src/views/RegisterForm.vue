@@ -52,7 +52,7 @@ import MyButton from "@/component/UI/MyButton.vue";
 import MyInput from "@/component/UI/MyInput.vue";
 import MyForm from "@/component/Form.vue"
 import '../router'
-
+import axios from 'axios'
 export default {
   components: {MyInput, MyButton, MyForm},
   data(){
@@ -101,20 +101,18 @@ export default {
           Password: this.password,
           Role: this.role
         }
-        await fetch('http://localhost:5045/api/Auth/Registration', {
-          method: 'POST',
+        await axios.post('http://localhost:5045/api/Auth/Registration', JSON.stringify(user), {
           headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify(user)
-        }).then(response => {
-          if(response.status === 409) {
-            alert("Error. Account with these name or email already exist")
-          }else{
-              alert("You successfully create account. Redirect to login.")
-               this.$router.push({path: '/login'})
+            'Content-Type': 'application/json'
           }
-        })
+        }).then(response => {
+              if(response.status === 200){
+                alert("You successfully create account. Redirect to login.")
+                this.$router.push({path: '/login'})
+              } else {
+                  alert("Error. Account with these name or email already exist")
+              }
+            })
       }
       else alert("Error")
     }
