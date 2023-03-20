@@ -1,7 +1,8 @@
 using System.Text;
 using BookShop.API;
 using BookShop.API.Authorization;
-using BookShop.API.Repository;
+using BookShop.API.DIContainer;
+using BookShop.API.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -30,7 +31,10 @@ builder.Services.AddTokenService();
 builder.Services.AddLoginResponce();
 
 builder.Services.AddUserService();
+builder.Services.AddSellerService();
 builder.Services.AddBookService();
+builder.Services.AddFileService();
+
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<ApplicationDbContext>();

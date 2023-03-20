@@ -15,8 +15,10 @@ public class BookController : Controller
 {
     private readonly IBookRepository _bookRepository;
     private readonly IUserRepository _userRepository;
+    private readonly ISellerRepository _sellerRepository;
 
-    public BookController(IBookRepository bookRepository, IUserRepository userRepository)
+    public BookController(IBookRepository bookRepository, 
+                          IUserRepository userRepository)
     {
         _bookRepository = bookRepository;
         _userRepository = userRepository;
@@ -60,6 +62,7 @@ public class BookController : Controller
                 _userRepository.DeleteBookFromUserWishList(currentUser.Id, book);
             _userRepository.AddBookToUserLibrary(currentUser.Id, book);
             _bookRepository.UpdateOnBuy(book, countBooks);
+            _sellerRepository.UpdateCountOfSoldProduct(book.SellerId, countBooks);
             return Ok(book);
         }
 

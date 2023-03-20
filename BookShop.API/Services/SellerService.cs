@@ -1,33 +1,52 @@
 using BookShop.API.Model.Entity;
+using BookShop.API.Repository;
 using MongoDB.Driver;
 
 namespace BookShop.API.Service;
 
-public class SellerService
+public class SellerService : ISellerRepository
 {
     private readonly ApplicationDbContext _context;
     private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
-    private UserService _userService;
-    public SellerService(ApplicationDbContext context, UserService userService)
+    private IMongoCollection<SellerStats> _sellerStats =>
+        _context.MongoDatabase.GetCollection<SellerStats>("SellerStats");
+    public SellerService(ApplicationDbContext context)
     {
-        _userService = userService;
         _context = context;
     }
-    
-    public void UpdateCountOfProduct(string sellerId)
+
+    public SellerStats GetSellerStats(string id)
     {
-        var currentSeller = (Seller)_userService.GetItem(sellerId);
-        currentSeller.CountOfProduct++;
-        var filter = Builders<User>.Filter.Eq("_id", sellerId);
-        var update = Builders<User>.Update.Set("CountOfProduct", currentSeller.CountOfProduct++);
-        _users.UpdateOne(filter, update);
+        var sellerStats = _sellerStats.Find(st => st.SellerId == id).FirstOrDefault();
+        return sellerStats != null ? sellerStats : null!;
+    }
+
+    public void DeleteSellerStats(string id)
+    {
+        _sellerStats.DeleteOne(Builders<SellerStats>.Filter.Eq("SellerId", id));
+    }
+
+    public void UpdateCountOfProductOnAdd(string sellerId)
+    {
+        var filter = Builders<SellerStats>.Filter.Eq("SellerId", sellerId);
+        var currentSellerStats = _sellerStats.Find(filter).FirstOrDefault();
+        var update = Builders<SellerStats>.Update.Set("CountOfProduct", currentSellerStats.CountOfProduct + 1);
+        _sellerStats.UpdateOne(filter, update);
+    }
+    
+    public void UpdateCountOfProductOnDelete(string sellerId)
+    {
+        var filter = Builders<SellerStats>.Filter.Eq("SellerId", sellerId);
+        var currentSellerStats = _sellerStats.Find(filter).FirstOrDefault();
+        var update = Builders<SellerStats>.Update.Set("CountOfProduct", currentSellerStats.CountOfProduct - 1);
+        _sellerStats.UpdateOne(filter, update);
     }
 
     public void UpdateCountOfSoldProduct(string sellerId, int countOfProduct)
     {
-        var currentSeller = (Seller)_userService.GetItem(sellerId);
-        var filter = Builders<User>.Filter.Eq("_id", currentSeller.Id);
-        var update = Builders<User>.Update.Set("CountOfSoldProduct", currentSeller.CountOfSoldProduct += countOfProduct);
-        _users.UpdateOne(filter, update);
+        var currentSellerStats = _sellerStats.Find(u => u.SellerId == sellerId).FirstOrDefault();
+        var filter = Builders<SellerStats>.Filter.Eq("SellerId", sellerId);
+        var update = Builders<SellerStats>.Update.Set("CountOfSoldProduct", currentSellerStats.CountOfSoldProduct += countOfProduct);
+        _sellerStats.UpdateOne(filter, update);
     }
 }

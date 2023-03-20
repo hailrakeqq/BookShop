@@ -1,6 +1,5 @@
 using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BookShop.API.Service;
@@ -9,14 +8,11 @@ public class BookService : IBookRepository
 {
     private readonly ApplicationDbContext _context;
     private IMongoCollection<Book> _books => _context.MongoDatabase.GetCollection<Book>("Books");
-    private readonly SellerService _sellerService;
 
-    public BookService(ApplicationDbContext context, SellerService sellerService)
+    public BookService(ApplicationDbContext context)
     {
         _context = context;
-        _sellerService = sellerService;
     }
-
     
     public IEnumerable<Book> GetList()
     {
@@ -31,6 +27,7 @@ public class BookService : IBookRepository
     public void Create(Book item)
     {
         item.Id = Guid.NewGuid().ToString();
+        item.Rating = 0;
         _books.InsertOne(item);
     }
 
@@ -44,7 +41,6 @@ public class BookService : IBookRepository
         var filter = Builders<Book>.Filter.Eq("Id", book.Id);
         var update = Builders<Book>.Update.Set("CountInStock", book.CountInStock - countBooks);
         _books.UpdateOne(filter, update);
-        _sellerService.UpdateCountOfSoldProduct(book.SellerId, countBooks);
     }
 
     public void Delete(string id)

@@ -146,7 +146,7 @@ public class UserService : IUserRepository
 
     public void Update(User item)
     {
-        _users.ReplaceOne(Builders<User>.Filter.Eq("_id", ObjectId.Parse(item.Id)), item);
+        _users.ReplaceOne(Builders<User>.Filter.Eq("_id", item.Id), item);
     }
 
     public void Delete(string id)

@@ -292,5 +292,3 @@ name: "BookConstructor",
   display: flex;
 }
 </style>
-
-//TODO: test save with image(and replace image)

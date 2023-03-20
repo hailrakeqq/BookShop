@@ -1,8 +1,9 @@
 using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
+using BookShop.API.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;    
 
 namespace BookShop.API.Controllers;
 
@@ -12,10 +13,15 @@ namespace BookShop.API.Controllers;
 public class SellerController : Controller
 {
     private readonly IBookRepository _bookRepository;
-    
-    public SellerController(IBookRepository bookRepository)
+    private readonly ISellerRepository _sellerService;
+    private readonly IFileRepository _fileRepository;
+    public SellerController(IBookRepository bookRepository,
+                            ISellerRepository sellerService,
+                            IFileRepository fileRepository)
     {
         _bookRepository = bookRepository;
+        _sellerService = sellerService;
+        _fileRepository = fileRepository;
     }
 
     [HttpPost]
@@ -27,7 +33,7 @@ public class SellerController : Controller
         if (!currentBook)
         {
             _bookRepository.Create(book);
-            
+            _sellerService.UpdateCountOfProductOnAdd(book.SellerId);
             return Ok("Book has been successfully add");
         }
 
@@ -58,6 +64,8 @@ public class SellerController : Controller
         if (currentBook != null)
         {
             _bookRepository.Delete(id);
+            _fileRepository.DeleteFileByName("bookCover", currentBook.Title);
+            _sellerService.UpdateCountOfProductOnDelete(currentBook.SellerId);
             return Ok("Book has been successfully delete");
         }
 

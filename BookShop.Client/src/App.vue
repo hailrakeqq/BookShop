@@ -51,8 +51,6 @@ import './router'
         ]
       }
     },
-    computed:{
-    },
     methods: {
       logout(){
         localStorage.clear()
@@ -92,7 +90,6 @@ import './router'
     },
     watch: {
       selectedSort(newValue){
-        console.log(newValue)
         const action = newValue
         
         switch (action) {
@@ -131,9 +128,6 @@ import './router'
 </script>
 <style scoped>
 .wrapper{
-  /*padding: 5px;*/
-  /*background-color: black;*/
-  /*color: white;*/
   background-color: #f7f7f7;
   border: 1px solid #ddd;
   border-radius: 5px;

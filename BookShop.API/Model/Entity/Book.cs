@@ -12,4 +12,5 @@ public class Book
     public int? YearOfPublication { get; set; }
     public int? CountOfPages { get; set; }
     public int CountInStock { get; set; }
+    public double Rating { get; set; }
 }

@@ -11,7 +11,6 @@ public class UserData
         Username = "TestCurrent",
         Email = "current@mail.com",
         Role = "user",
-        CountOfProduct = 0
     };
 
     public static CurrentUser currentUser =
@@ -30,7 +29,6 @@ public class UserData
                 Username = "TestSeller",
                 Email = "Seller@mail.com",
                 Role = "seller",
-                CountOfProduct = 0
             },
             new()
             {
@@ -38,7 +36,6 @@ public class UserData
                 Username = "TestUser1",
                 Email = "user1@mail.com",
                 Role = "user",
-                CountOfProduct = 0
             },
             new()
             {
@@ -46,7 +43,6 @@ public class UserData
                 Username = "TestUser2",
                 Email = "user2@mail.com",
                 Role = "user",
-                CountOfProduct = 0
             }
         };
     }

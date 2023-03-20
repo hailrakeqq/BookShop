@@ -2,6 +2,7 @@ using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
 using BookShop.Tools;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BookShop.API.Controllers;
 
@@ -10,10 +11,18 @@ namespace BookShop.API.Controllers;
 public class UserController : Controller
 {
     private readonly IUserRepository _userRepository;
-
-    public UserController(IUserRepository userRepository)
+    private readonly ISellerRepository _sellerRepository;
+    private readonly IFileRepository _fileRepository;
+    private readonly IBookRepository _bookRepository;
+    public UserController(IUserRepository userRepository, 
+                          ISellerRepository sellerRepository,
+                          IFileRepository fileRepository,
+                          IBookRepository bookRepository)
     {
         _userRepository = userRepository;
+        _sellerRepository = sellerRepository;
+        _fileRepository = fileRepository;
+        _bookRepository = bookRepository;
     }
 
     [HttpGet]
@@ -55,7 +64,7 @@ public class UserController : Controller
                     existingUser.Email = newUserData.Email;
 
                 if (!string.IsNullOrEmpty(newUserData.Password))
-                    existingUser.Password = newUserData.Password;
+                    existingUser.Password = Toolchain.GenerateHash(newUserData.Password);
 
                 _userRepository.Update(existingUser);
 
@@ -72,6 +81,21 @@ public class UserController : Controller
     [Route("{id:Guid}")]
     public IActionResult DeleteUserAccount([FromRoute] string id)
     {
+        var user = _userRepository.GetItem(id);
+        if (user.Role == "seller")
+        {
+            _sellerRepository.DeleteSellerStats(id);
+            
+            var sellerBookCollection = _bookRepository.GetList().Where(b => b.SellerId == id).ToList();
+            if (!sellerBookCollection.IsNullOrEmpty())
+            {
+                foreach (var book in sellerBookCollection)
+                {
+                    _fileRepository.DeleteFileByName("bookCover",book.Title!);
+                    _bookRepository.Delete(book.Id!);
+                }
+            }
+        }
         _userRepository.Delete(id);
         return Ok();
     }

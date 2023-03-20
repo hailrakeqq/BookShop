@@ -28,6 +28,9 @@ public class AuthController : Controller
     private IMongoCollection<UsersWishlist> _wishList =>
         _context.MongoDatabase.GetCollection<UsersWishlist>("UsersWishlist");
 
+    private IMongoCollection<SellerStats> _sellerStats =>
+        _context.MongoDatabase.GetCollection<SellerStats>("SellerStats");
+
     [HttpPost]
     [Route("Registration")]
     public async Task<IActionResult> CreateUser([FromBody]User user)
@@ -49,17 +52,16 @@ public class AuthController : Controller
             switch (user.Role)
             {
                 case "seller":
-                    var seller = new Seller
+                    var seller = user;
+                    var sellerStats = new SellerStats
                     {
-                        Id = user.Id,
-                        Email = user.Email,
-                        Username = user.Username,
-                        Password = user.Password,
-                        Role = user.Role,
+                        Id = Guid.NewGuid().ToString(),
+                        SellerId = seller.Id,
                         CountOfProduct = 0,
                         CountOfSoldProduct = 0
                     };
                     await _users.InsertOneAsync(seller);
+                    await _sellerStats.InsertOneAsync(sellerStats);
                     return Ok(seller);
 
                 default:

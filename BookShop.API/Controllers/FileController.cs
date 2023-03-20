@@ -1,6 +1,6 @@
+using BookShop.API.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BookShop.Tools;
 
 namespace BookShop.API.Controllers;
 
@@ -8,20 +8,18 @@ namespace BookShop.API.Controllers;
 [Route("api/[controller]")]
 public class FileController : Controller
 {
+    private readonly IFileRepository _fileService;
+
+    public FileController(IFileRepository fileService)
+    {
+        _fileService = fileService;
+    }
+    
     [HttpGet]
     [Route("GetAllBookCover")]
     public IActionResult SendAllBookCover()
     {
-        Dictionary<string, byte[]> BookCoverCollection = new Dictionary<string, byte[]>();
-        string[] filesCollection = Directory.GetFiles("bookCover", "*.jpg");
-
-        foreach (var file in filesCollection)
-        {
-            var fileName = file.Split('/');
-            BookCoverCollection.Add(fileName[1],System.IO.File.ReadAllBytes(file));
-        }
-
-        var imagesArchive = Toolchain.CreateZipArchiveFromFilesList(BookCoverCollection, "bookCovers.zip");
+        var imagesArchive = _fileService.GetAllFileFromDirectory("bookCover", "bookCovers.zip");
         return new FileContentResult(imagesArchive, "application/zip")
         {
             FileDownloadName = "bookCovers.zip"
@@ -33,7 +31,7 @@ public class FileController : Controller
     [Route("GetBookCoverByName/{BookName}")]
     public IActionResult SendBookCoverByName([FromRoute] string BookName)
     {
-        byte[] requestedImage = System.IO.File.ReadAllBytes($"bookCover/{BookName}.jpg");
+        var requestedImage = _fileService.GetFileByName("bookCover", $"{BookName}.jpg");
         return new FileContentResult(requestedImage, "image/jpeg");
     }
 
@@ -42,24 +40,9 @@ public class FileController : Controller
     [Authorize]
     public IActionResult SaveBookCover(IFormCollection requestContent)
     {
-        var file = requestContent.Files[0];
+        if(_fileService.SaveFileToDirectory("bookCover", requestContent))
+            return Ok("File uploaded successfully!");
         
-        if (file == null || file.Length == 0)
-            return BadRequest("Please select a file to upload");
-        
-        var fileName = Path.GetFileName(requestContent.Files[0].FileName);
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "bookCover", $"{fileName}.jpg");
-        
-        if (System.IO.File.Exists(filePath))
-        {
-            System.IO.File.Delete(filePath);
-        }
-        
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            file.CopyTo(stream);
-        }
-        
-        return Ok("File uploaded successfully!");
+        return BadRequest("Please select a file to upload");
     }
 }
