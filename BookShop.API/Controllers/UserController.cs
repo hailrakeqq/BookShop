@@ -26,6 +26,36 @@ public class UserController : Controller
     }
 
     [HttpGet]
+    [Route("GetUserPublicData/{id:Guid}")]
+    public IActionResult GetUserPublicData([FromRoute] string id)
+    {
+        var user = _userRepository.GetItem(id);
+        if (user != null)
+        {
+            var userData = new UserPublicData()
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Role = user.Role
+            };
+            
+            if (user.Role == "seller")
+            {
+                var sellerStats = _sellerRepository.GetSellerStats(id);
+                userData.CountOfProduct = sellerStats.CountOfProduct; 
+                userData.CountOfSoldProduct = sellerStats.CountOfSoldProduct;
+                return Ok(userData);
+            }
+
+            userData.BoughtBook = _userRepository.GetUserLibrary(id).Count;
+            userData.WishlistCount = _userRepository.GetUserWishlist(id).Count;
+            return Ok(userData);
+        }
+        
+        return NotFound();
+    }
+    
+    [HttpGet]
     [Route("GetUserWishlist/{id:Guid}")]
     public IActionResult GetUserWishList([FromRoute] string id)
     {

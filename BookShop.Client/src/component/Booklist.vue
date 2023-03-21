@@ -6,7 +6,7 @@
         :book="book"
         :key="book.id"/>
   </div>
-  <h2 v-else style="color: red">Book list is empty. You can add new book right now</h2>
+  <h2 v-else style="color: red">Book list this seller is empty.</h2>
 </template>
 
 <script lang="ts">

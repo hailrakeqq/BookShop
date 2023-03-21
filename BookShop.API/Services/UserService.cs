@@ -50,7 +50,7 @@ public class UserService : IUserRepository
         {
             var filter = Builders<BsonDocument>.Filter.Eq("OwnerId", id);
             var result = _wishList.Find(filter).FirstOrDefault();
-            GetBookList(result["Wishlist"]);
+            return GetBookList(result["Wishlist"]);
         }
 
         return null;

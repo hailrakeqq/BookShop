@@ -45,7 +45,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import axios from 'axios'
 import MyButton from '@/component/UI/MyButton.vue'
 import MyInput from '@/component/UI/MyInput.vue'
@@ -55,6 +55,9 @@ export default {
 name: "BookPage",
   data(){
     return{
+      userid: localStorage.getItem('id'),
+      userRole: localStorage.getItem('role'),
+      jwtToken: localStorage.getItem('jwtToken'),
       book: {},
       bookComment: [],
       genrelist: '',
@@ -64,11 +67,6 @@ name: "BookPage",
         rating: 0,
         comment: '',
       }
-    }
-  },
-  computed:{
-    generateGenreListFromArray(){
-      this.genrelist = this.book.genre.join(', ')
     }
   },
   methods: {
@@ -88,7 +86,10 @@ name: "BookPage",
     },
     async getBookTextData(id){
       await axios.get(`http://localhost:5045/api/Book/GetBookById/${id}`,{headers:{"Content-Type": "image/jpeg"}})
-          .then(response => this.book = response.data)
+          .then(response => {
+            this.book = response.data
+            this.genrelist = this.book.genre.join(', ')
+          })
     },
     async getBookCoverImage(name){
       await axios.get(`http://localhost:5045/api/File/GetBookCoverByName/${name}`,{
@@ -98,16 +99,58 @@ name: "BookPage",
     addComment(){
       
     },
+    
+    //TODO: redirect to buy page
     buyBook(){
-      
+      if(this.userRole !== 'seller'){
+        axios.post(`http://localhost:5045/api/Book/BuyBook/${this.book.id}`, null, {
+          headers:{
+            "Authorization": `bearer ${this.jwtToken}`,
+          } 
+        }).then(response => {
+              if(response.status === 200)
+                this.$router.push({name: 'library', params:{userid: localStorage.getItem('id')}})
+            }).catch(error => {
+              if(error.message.includes('401') || error.message.includes('404')){
+                this.$router.push('/login')
+              }
+            })
+      } else{
+        alert("Seller Cannot buy a book.")
+      }
     },
     addBookToMyWishList(){
-    }
+      if(this.userRole !== 'seller') {
+        /*
+        * here i send null data because when we use post request and it's haven't any data we get 
+        * error 401 unauthorized 
+        */
+        axios.post(`http://localhost:5045/api/Book/AddBookToUserWishList/${this.book.id}`, null, {
+          headers: {
+            "Authorization": `bearer ${this.jwtToken}`,
+          }
+        })
+            .then(response => {
+          if (response.status === 200)
+            this.$router.push({name: 'wishlist', params: {userid: localStorage.getItem('id')}})
+        }).catch(error => {
+          if (error.message.includes('401') || error.message.includes('404')) {
+            this.$router.push('/login')
+          }
+          else if(error.message.includes('409'))
+            alert("You have already this book in your wishlist")
+        })
+      } 
+      else {
+        alert("Seller Cannot add book to wishlist.")
+      }
+    },
   },
   mounted(){
     this.loadBookData()
   }
 }
+
 </script>
 
 <style scoped>

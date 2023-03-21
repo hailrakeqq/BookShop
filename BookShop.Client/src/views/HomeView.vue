@@ -1,13 +1,9 @@
 <template>
   <div class="app">
     <h3>Page with books</h3>
-    <div class="app_button">
-      <my-button @click="showDialog">Add book</my-button>
-      <my-select v-model="selectedSort" :options="sortOptions" />
+    <div class="app_button" v-if="userRole === 'seller'">
+      <my-button @click="redirectToBookConstructor">Add book</my-button>
     </div>
-    <my-dialog v-model:show="dialogVisible" @click="hideDialog">
-      <Form @create="createBook"/>
-    </my-dialog>
     <Booklist :books="books"  v-if="!isBookLoading"/>
     <div v-else>Loading...</div>
   </div>
@@ -34,6 +30,7 @@ export default {
     return{
       books: [],
       images: Map,
+      userRole: localStorage.getItem('role'),
       dialogVisible: false,
       isBookLoading: false,
       selectedSort: '',
@@ -44,9 +41,8 @@ export default {
     }
   },
   methods:{
-    createBook(book: Book){
-      this.books.push(book)
-      this.dialogVisible = false
+    redirectToBookConstructor(){
+      this.$router.push('/bookconstructor')
     },
     async getBookList(){
       try{
@@ -58,15 +54,6 @@ export default {
       } finally {
         this.isBookLoading = false
       }
-    },
-    removeBook(book: Book){
-      this.books = this.books.filter(b => b.id !== book.id)
-    },
-    hideDialog(){
-      
-    },
-    showDialog(){
-      this.dialogVisible = true;
     },
     findCoverForBookByBookTitle(){
       this.books.forEach(book => {

@@ -8,7 +8,7 @@
 <script lang="ts">
 import Booklist from "@/component/Booklist.vue";
 import {getImagesArrayFromServer} from '../../scripts/getImagesArrayFromServer'
-
+import {getBookCollectionBySellerId} from '../../scripts/BookService'
 export default {
   name: "Stock",
   components:{
@@ -22,22 +22,9 @@ export default {
     }
   },
   methods:{
-    async getBookCollectionBySellerId(id){
-      try{
-        this.isBookLoading = true
-        await fetch(`http://localhost:5045/api/Book/GetSellerBookCollection/${id}`,{
-          method: "GET",
-          headers:{
-            'Content-Type': 'application/json'
-          }
-        }).then(data => data.json()).then(data => this.books = data)
-      } catch (e) {
-        if(e.message == "JSON.parse: unexpected end of data at line 1 column 1 of the JSON data")
-          return
-        alert("error")
-      } finally {
-        this.isBookLoading = false
-      }
+    async getBookCollection(){
+      const response = await getBookCollectionBySellerId(localStorage.getItem('id'))
+      this.books = response
     },
     findCoverForBookByBookTitle(){
       this.books.forEach(book => {
@@ -48,7 +35,7 @@ export default {
       })
     },
     loadBookAndImages(){
-      this.getBookCollectionBySellerId(localStorage.getItem('id'));
+      this.getBookCollection();
       getImagesArrayFromServer()
           .then(images => {this.images = images})
           .then(() => this.findCoverForBookByBookTitle());
