@@ -11,7 +11,7 @@
         <my-button @click="deleteBookRequest(book.id)">Delete</my-button>
       </div>
       <div v-else>
-        <my-button>Buy book</my-button>
+        <my-button @click="buyBookPageRedirect">Buy book</my-button>
       </div>
     </div>
   </div>
@@ -38,6 +38,9 @@ export default {
     },
   },
   methods:{
+    buyBookPageRedirect(id){
+      this.$router.push({name: 'buybook', params: {bookId: this.book.id}})
+    },
     goToBookPage(id){
       console.log("clicked")
       this.$router.push({name: 'book', params: {id: id}})

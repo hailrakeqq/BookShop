@@ -7,8 +7,8 @@
 
 <script lang="ts">
 import Booklist from "@/component/Booklist.vue";
-import {getImagesArrayFromServer} from '../../scripts/getImagesArrayFromServer'
-import {getBookCollectionBySellerId} from '../../scripts/BookService'
+import {getImagesHashMapFromServer} from '../../scripts/getImagesHashMapFromServer'
+import {getBookCollectionFromAPIEndpointAndId} from '../../scripts/BookService'
 export default {
   name: "Stock",
   components:{
@@ -23,7 +23,10 @@ export default {
   },
   methods:{
     async getBookCollection(){
-      const response = await getBookCollectionBySellerId(localStorage.getItem('id'))
+      const response = await getBookCollectionFromAPIEndpointAndId(
+          "http://localhost:5045/api/Book/GetSellerBookCollection",
+          localStorage.getItem('id')
+      )
       this.books = response
     },
     findCoverForBookByBookTitle(){

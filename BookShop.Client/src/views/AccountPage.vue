@@ -1,6 +1,5 @@
 <template>
   <div class="main">
-    
     <div class="profile-info">
       <h2 class="info-label">Name:</h2>
       <h2 class="info-value">{{currentUser.username}}</h2>
@@ -29,6 +28,7 @@
         <h3><a class="info-label a-link" @click="goToWishList">Wishlist ({{this.currentUser.wishlistCount}})</a></h3>
       </div>
     </div>
+<!--    seller top books section-->
     <div class="seller__container" v-if="currentUser.role === 'seller'">
       <h3 style="text-align: center">Top seller product</h3>
       <booklist :books="books" :images="images"></booklist>
@@ -39,8 +39,8 @@
 <script>
 import axios from 'axios'
 import Booklist from '@/component/Booklist.vue'
-import {getBookCollectionBySellerId} from '@/scripts/BookService'
-import {getImagesArrayFromServer} from '@/scripts/getImagesArrayFromServer'
+import {getBookCollectionFromAPIEndpointAndId} from '@/scripts/BookService'
+import {getImagesHashMapFromServer} from '@/scripts/getImagesHashMapFromServer'
 import MyButton from '@/component/UI/MyButton.vue'
 export default {
 name: "AccountPage",
@@ -60,7 +60,10 @@ name: "AccountPage",
         this.currentUser = await response.data
     },
     async getBookCollection(){
-      const response = await getBookCollectionBySellerId(localStorage.getItem('id'))
+      const response = await getBookCollectionFromAPIEndpointAndId(
+          "http://localhost:5045/api/Book/GetSellerBookCollection",
+          localStorage.getItem('id')
+      )
       this.books = response
     },
     findCoverForBookByBookTitle(){
@@ -73,7 +76,7 @@ name: "AccountPage",
     },
     loadBookAndImages(){
       this.getBookCollection();
-      getImagesArrayFromServer()
+      getImagesHashMapFromServer()
           .then(images => {this.images = images})
           .then(() => this.findCoverForBookByBookTitle());
     },

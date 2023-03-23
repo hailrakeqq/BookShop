@@ -6,17 +6,17 @@
     <div class="main">
       <div class="img">
         <img class="img" :src="image"/>
-      <div class="buy-section">
-        <h3>Price: {{book.price}} грн.</h3>
-        <my-button @click="buyBook">Buy Book</my-button>
-        <my-button @click="addBookToMyWishList">Add Book to Wishlist</my-button>
-      </div>
+        <div class="buy-section">
+          <h3>Price: {{book.price}} грн.</h3>
+          <my-button @click="showDialog">Buy Book</my-button>
+          <my-button @click="addBookToMyWishList">Add Book to Wishlist</my-button>
+        </div>
       </div>
       <div class="book-data-block">
         <div class="book-data-block-main">
           <h1>{{book.title}}</h1>
           <h3>Author: <b style="color: blue">{{book.author}}</b></h3>
-          <h4>Genre: {{genrelist}}</h4> 
+          <h4>Genre: {{genrelist}}</h4>
           <h5>Year of publication: {{book.yearOfPublication}}</h5>
           <h5>Pages: {{book.countOfPages}}</h5>
         </div>
@@ -26,12 +26,12 @@
         </div>
       </div>
     </div>
-    
+
     <div class="comment-section">
       <div class="comment-form">
         <my-input id="comment-input" type="text" placeholder="Your comment"/>
-        <star-rating class="rating-book" 
-                     v-model:rating="rating" 
+        <star-rating class="rating-book"
+                     v-model:rating="rating"
                      v-bind:increment="0.5"
                      v-bind:show-rating="false"
                      v-bind:star-size="18"
@@ -39,9 +39,24 @@
         <MyButton @click="addComment">Add a comment</MyButton>
       </div>
       <div class="render-comment">
-      <!--here can be comment loaded from db-->
+        <!--here can be comment loaded from db-->
       </div>
     </div>
+    <my-dialog v-model:show="isDialogVisible">
+      <div class="dialog__content">
+        <h1>{{ book.title }}</h1>
+        <p>{{ book.author }}</p>
+        <my-form @submit.prevent="submitForm">
+          <div>
+            <label for="quantity">Quantity: </label>
+            <input type="number" id="quantity" v-model.number="bookCount" min="1" max="15" required>
+          </div>
+          <div>
+            <my-button style="margin-left: 100px" @click="buyBook">Buy Now</my-button>
+          </div>
+        </my-form>
+      </div>
+    </my-dialog>
   </div>
 </template>
 
@@ -49,10 +64,12 @@
 import axios from 'axios'
 import MyButton from '@/component/UI/MyButton.vue'
 import MyInput from '@/component/UI/MyInput.vue'
+import MyDialog from '@/component/UI/MyDialog.vue'
+import MyForm from '@/component/Form.vue'
 import StarRating from 'vue-star-rating'
 export default {
-  components: {MyButton, MyInput, StarRating},
-name: "BookPage",
+  components: {MyButton, MyInput, StarRating , MyDialog, MyForm},
+  name: "BookPage",
   data(){
     return{
       userid: localStorage.getItem('id'),
@@ -60,7 +77,9 @@ name: "BookPage",
       jwtToken: localStorage.getItem('jwtToken'),
       book: {},
       bookComment: [],
+      bookCount: 1,
       genrelist: '',
+      isDialogVisible: false,
       image: null,
       isPageLoading: false,
       comment:{
@@ -76,8 +95,8 @@ name: "BookPage",
         console.log(this.$route.params.id)
         this.getBookTextData(this.$route.params.id)
             .then(() =>{
-          this.getBookCoverImage(this.book.title)
-        })
+              this.getBookCoverImage(this.book.title)
+            })
       } catch (e) {
         alert(e.message)
       } finally {
@@ -97,24 +116,35 @@ name: "BookPage",
       }).then(response =>this.image = URL.createObjectURL(response.data))
     },
     addComment(){
-      
+
     },
-    
-    //TODO: redirect to buy page
+    // hideDialog(){
+    //   this.showDialog = true
+    // },
+    showDialog(){
+      this.isDialogVisible = true
+    },
     buyBook(){
       if(this.userRole !== 'seller'){
-        axios.post(`http://localhost:5045/api/Book/BuyBook/${this.book.id}`, null, {
+        axios.post(`http://localhost:5045/api/Book/BuyBook/${this.book.id}`, this.bookCount, {
           headers:{
+            "Content-Type": "application/json",
             "Authorization": `bearer ${this.jwtToken}`,
-          } 
+          }
         }).then(response => {
-              if(response.status === 200)
-                this.$router.push({name: 'library', params:{userid: localStorage.getItem('id')}})
-            }).catch(error => {
-              if(error.message.includes('401') || error.message.includes('404')){
-                this.$router.push('/login')
-              }
-            })
+          if(response.status === 200){
+            this.isDialogVisible = false
+            this.$router.push({name: 'library', params:{userid: localStorage.getItem('id')}})
+          }
+        }).catch(error => {
+          if(error.message.includes('401') || error.message.includes('404')){
+            this.$router.push('/login')
+          }
+          else if(error.message.includes('409')){
+            alert("You already have this book")
+            this.isDialogVisible = false
+          }
+        })
       } else{
         alert("Seller Cannot buy a book.")
       }
@@ -131,16 +161,16 @@ name: "BookPage",
           }
         })
             .then(response => {
-          if (response.status === 200)
-            this.$router.push({name: 'wishlist', params: {userid: localStorage.getItem('id')}})
-        }).catch(error => {
+              if (response.status === 200)
+                this.$router.push({name: 'wishlist', params: {userid: localStorage.getItem('id')}})
+            }).catch(error => {
           if (error.message.includes('401') || error.message.includes('404')) {
             this.$router.push('/login')
           }
           else if(error.message.includes('409'))
             alert("You have already this book in your wishlist")
         })
-      } 
+      }
       else {
         alert("Seller Cannot add book to wishlist.")
       }
@@ -150,7 +180,6 @@ name: "BookPage",
     this.loadBookData()
   }
 }
-
 </script>
 
 <style scoped>
@@ -197,5 +226,7 @@ name: "BookPage",
 .rating-book{
   margin-top: 10px;
 }
-
+.dialog__content{
+  padding: 50px;
+}
 </style>

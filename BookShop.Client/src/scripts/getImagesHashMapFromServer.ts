@@ -1,6 +1,6 @@
 import jszip from 'jszip';
 
-export function getImagesArrayFromServer(): Promise<Map<string, string>> {
+export function getImagesHashMapFromServer(): Promise<Map<string, string>> {
     return fetch('http://localhost:5045/api/File/GetAllBookCover')
         .then(response => response.arrayBuffer())
         .then(data => {
@@ -26,5 +26,5 @@ export function getImagesArrayFromServer(): Promise<Map<string, string>> {
             });
         });
 }
-export default {getImagesArrayFromServer}
+export default {getImagesHashMapFromServer}
 

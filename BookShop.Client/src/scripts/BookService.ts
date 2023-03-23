@@ -1,8 +1,8 @@
 import type { Book } from '@/types/Book';
 import axios from 'axios'
 
-export function getBookCollectionBySellerId(id: number): Promise<Book[]> {
-    return axios.get(`http://localhost:5045/api/Book/GetSellerBookCollection/${id}`, {
+export function getBookCollectionFromAPIEndpointAndId(path: string,id: number): Promise<Book[]> {
+    return axios.get(`${path}/${id}`, {
         headers: {'Content-Type': 'application/json'}
     }).then(response => {
         if(!response.data) 

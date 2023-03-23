@@ -39,6 +39,5 @@ name: "my-dialog",
   background: white;
   min-height: 50px;
   min-width: 400px;
-  padding: 50px;
 }
 </style>

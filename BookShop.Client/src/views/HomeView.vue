@@ -10,20 +10,19 @@
 </template>
 
 <script lang="ts">
-import Form from "@/component/Form.vue";
 import Booklist from "@/component/Booklist.vue";
 import {Book} from "@/component/book"
 import MyDialog from "@/component/UI/MyDialog.vue";
 import MyButton from "@/component/UI/MyButton.vue";
 import axios from "axios";
 import MySelect from "@/component/UI/MySelect.vue";
-import {getImagesArrayFromServer} from '../scripts/getImagesArrayFromServer'
+import {getImagesHashMapFromServer} from '../scripts/getImagesHashMapFromServer'
 export default {
   components: {
     MySelect,
     MyButton,
     MyDialog,
-    Form, Booklist, Book
+    Booklist, Book
   },
   name: 'Home',
   data(){
@@ -65,7 +64,7 @@ export default {
     },
     loadBookAndImages(){
       this.getBookList()
-      getImagesArrayFromServer()
+      getImagesHashMapFromServer()
           .then(images => {this.images = images})
           .then(() => this.findCoverForBookByBookTitle());
     }
