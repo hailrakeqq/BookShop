@@ -77,7 +77,7 @@ name: "BookConstructor",
     return{
       book: {},
       sellerData: {
-        jwtToken: localStorage.getItem('jwtToken'),
+        jwtToken: localStorage.getItem('accessToken'),
         id: localStorage.getItem('id')
       },
       items: [

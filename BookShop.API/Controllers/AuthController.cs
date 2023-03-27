@@ -1,5 +1,6 @@
 using BookShop.API.Authorization;
 using BookShop.API.Model.Entity;
+using BookShop.API.Repository;
 using BookShop.Tools;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
@@ -11,14 +12,14 @@ namespace BookShop.API.Controllers;
 public class AuthController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly LoginResponce _loginResponce;
     private readonly ITokenService _tokenService;
-
-    public AuthController(ApplicationDbContext context, ITokenService tokenService, LoginResponce tokenResponce)
+    private readonly IUserRepository _userService;
+    
+    public AuthController(ApplicationDbContext context, ITokenService tokenService, IUserRepository userService)
     {
         _context = context;
         _tokenService = tokenService;
-        _loginResponce = tokenResponce;
+        _userService = userService;
     }
 
     private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
@@ -97,15 +98,31 @@ public class AuthController : Controller
 
         if (currentUser != null)
         {
-            _loginResponce.Id = currentUser.Id;
-            _loginResponce.Email = currentUser.Email;
-            _loginResponce.Username = currentUser.Username;
-            _loginResponce.Role = currentUser.Role;
-            _loginResponce.JWTToken = _tokenService.GenerateToken(currentUser);
-            _loginResponce.RefreshToken = "test";
-            return Ok(_loginResponce);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var loginResponse = new LoginResponse
+            {
+                Id = currentUser.Id,
+                Email = currentUser.Email,
+                Username = currentUser.Username,
+                Role = currentUser.Role,
+                AccessToken = _tokenService.GenerateAccessToken(currentUser),
+                RefreshToken = newRefreshToken.Token
+            };
+            _userService.UpdateRefreshTokenByUserId(newRefreshToken, currentUser.Id);
+            return Ok(loginResponse);
         }
 
         return Unauthorized(currentUser);
+    }
+
+    [HttpPost("refresh-token")]
+    public IActionResult RefreshToken([FromHeader]string UserId, [FromHeader] string refreshToken)
+    {
+        var user = _userService.GetItem(UserId);
+        if(user.RefreshToken != refreshToken && user.TokenExpires < DateTime.Now)
+            return Unauthorized("Invalid refresh token.");
+
+        var newAccessToken = _tokenService.GenerateAccessToken(user);
+        return Ok(newAccessToken);
     }
 }

@@ -1,6 +1,6 @@
 <template>
-  <div class="book" @click="goToBookPage(this.book.id)">
-    <div class="img">
+  <div class="book">
+    <div class="img" @click="goToBookPage(this.book.id)">
       <img :src="book.imageLink"/>
     </div>
     <div class="text_data">
@@ -11,7 +11,10 @@
         <my-button @click="deleteBookRequest(book.id)">Delete</my-button>
       </div>
       <div v-else>
-        <my-button @click="buyBookPageRedirect">Buy book</my-button>
+        <my-button @click="goToBookPage(this.book.id)">Buy book</my-button>
+      </div>
+      <div v-if="isWishlistPage">
+        <my-button @click="deleteBookFromWishlist">Delete</my-button>
       </div>
     </div>
   </div>
@@ -20,6 +23,7 @@
 <script>
 import MyButton from "@/component/UI/MyButton.vue";
 import '../router'
+import axios from 'axios'
 
 export default {
   components: {
@@ -28,7 +32,7 @@ export default {
   name: "bookItem",
   data(){
     return{
-      userRole: localStorage.getItem('role')  
+      userRole: localStorage.getItem('role')
     }
   },
   props:{
@@ -36,10 +40,24 @@ export default {
       type: Object,
       required: true
     },
+    isWishlistPage:{
+      type: Boolean,
+      required: false
+    }
   },
   methods:{
-    buyBookPageRedirect(id){
-      this.$router.push({name: 'buybook', params: {bookId: this.book.id}})
+    deleteBookFromWishlist(){
+      axios.delete(`http://localhost:5045/api/Book/DeleteBookFromUserWishList/${this.book.id}`,{
+        headers:{
+          'Authorization': `bearer ${localStorage.getItem("accessToken")}`,
+        }
+      }).then(response => {
+        console.log(response)
+            if(response.status === 200){
+              alert("book has been successfully deleted from your wishlist")
+              document.location.reload(false)
+            }
+          })
     },
     goToBookPage(id){
       console.log("clicked")
@@ -49,11 +67,8 @@ export default {
       this.$router.push({name: 'changebookdata', params: {bookId: id}})
     },
     deleteBookRequest(id){
-      fetch(`http://localhost:5045/api/Seller/DeleteBook/${id}`, {
-        method: "DELETE",
-        headers:{
-          'Authorization': `bearer ${localStorage.getItem("jwtToken")}`,
-        }
+      axios.delete(`http://localhost:5045/api/Seller/DeleteBook/${id}`,{
+        headers:{'Authorization': `bearer ${localStorage.getItem("accessToken")}`}
       }).then(response => response.status == 200 ? document.location.reload(false) : alert("error when you try to delete"))
     }
   }

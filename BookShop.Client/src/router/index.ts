@@ -6,6 +6,7 @@ import LoginForm from '../views/LoginForm.vue'
 import BookPage from '../views/BookPage.vue'
 import AccountPage from '../views/AccountPage.vue'
 import SettingsPage from '../views/SettingsPage.vue'
+import NotFoundPage from '../views/NotFoundPage.vue'
 
 //user rout
 import Library from '../views/user-views/Library.vue'
@@ -72,6 +73,11 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsPage
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFoundPage',
+      component: NotFoundPage
     }
   ]
 })

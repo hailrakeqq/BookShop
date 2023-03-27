@@ -34,7 +34,7 @@ builder.Services.AddUserService();
 builder.Services.AddSellerService();
 builder.Services.AddBookService();
 builder.Services.AddFileService();
-
+builder.Services.AddCommentService();
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<ApplicationDbContext>();

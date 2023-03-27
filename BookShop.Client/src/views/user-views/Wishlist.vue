@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <h1>My Wishlist</h1>
-    <booklist :books="books"></booklist>
+    <booklist :books="books" :isWishListPage="isWishlistPage"></booklist>
   </div>
 </template>
 
@@ -16,7 +16,8 @@ export default {
   },
   data(){
     return{
-      books: []
+      books: [],
+      isWishlistPage: true
     }
   },
   methods:{

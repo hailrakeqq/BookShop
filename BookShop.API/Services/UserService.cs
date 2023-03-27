@@ -1,5 +1,7 @@
+using BookShop.API.Authorization;
 using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -136,6 +138,18 @@ public class UserService : IUserRepository
         var update = Builders<BsonDocument>.Update.Push("BoughtBook", book);
 
         _library.FindOneAndUpdateAsync(filter, update);
+    }
+
+    public void UpdateRefreshTokenByUserId(RefreshToken refreshToken, string id)
+    {
+        var filter = Builders<User>.Filter.Eq("_id", id);
+        var updateToken = Builders<User>.Update.Set("RefreshToken", refreshToken.Token);
+        var updateCreatedTime = Builders<User>.Update.Set("TokenCreated", refreshToken.Created);
+        var updateExpiresTime = Builders<User>.Update.Set("TokenExpires", refreshToken.Expires);
+        
+        _users.UpdateOne(filter, updateToken);
+        _users.UpdateOne(filter, updateCreatedTime);
+        _users.UpdateOne(filter, updateExpiresTime);
     }
 
     public void Create(User user)

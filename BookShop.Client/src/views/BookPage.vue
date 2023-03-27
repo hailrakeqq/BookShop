@@ -29,9 +29,9 @@
 
     <div class="comment-section">
       <div class="comment-form">
-        <my-input id="comment-input" type="text" placeholder="Your comment"/>
+        <my-input v-model="comment.text" id="comment-input" type="text" placeholder="Your comment"/>
         <star-rating class="rating-book"
-                     v-model:rating="rating"
+                     v-model:rating="comment.rating"
                      v-bind:increment="0.5"
                      v-bind:show-rating="false"
                      v-bind:star-size="18"
@@ -74,7 +74,7 @@ export default {
     return{
       userid: localStorage.getItem('id'),
       userRole: localStorage.getItem('role'),
-      jwtToken: localStorage.getItem('jwtToken'),
+      jwtToken: localStorage.getItem('accessToken'),
       book: {},
       bookComment: [],
       bookCount: 1,
@@ -84,7 +84,7 @@ export default {
       isPageLoading: false,
       comment:{
         rating: 0,
-        comment: '',
+        text: '',
       }
     }
   },
@@ -92,7 +92,6 @@ export default {
     loadBookData(){
       try {
         this.isPageLoading = true
-        console.log(this.$route.params.id)
         this.getBookTextData(this.$route.params.id)
             .then(() =>{
               this.getBookCoverImage(this.book.title)
@@ -104,23 +103,37 @@ export default {
       }
     },
     async getBookTextData(id){
-      await axios.get(`http://localhost:5045/api/Book/GetBookById/${id}`,{headers:{"Content-Type": "image/jpeg"}})
-          .then(response => {
-            this.book = response.data
-            this.genrelist = this.book.genre.join(', ')
-          })
+      try{
+        await axios.get(`http://localhost:5045/api/Book/GetBookById/${id}`,{headers:{"Content-Type": "application/json"}})
+            .then(response => {
+                this.book = response.data
+                this.genrelist = this.book.genre.join(', ')
+              })
+      } catch (e) {
+        if(e.message.includes("404"))
+          this.$router.push({name: 'notFoundPage'})
+      }
     },
     async getBookCoverImage(name){
       await axios.get(`http://localhost:5045/api/File/GetBookCoverByName/${name}`,{
         responseType: 'blob'
       }).then(response =>this.image = URL.createObjectURL(response.data))
     },
-    addComment(){
-
+    async addComment(){
+      const comment = {
+        text: this.comment.text,
+        rating: this.comment.rating
+      }
+      await axios.post(`http://localhost:5045/api/Comment/CreateBookComment/${this.book.id}`, JSON.stringify(comment), { 
+        headers:{
+            "Content-Type": "application/json",
+            "Authorization": `bearer ${this.jwtToken}`},
+      }).then(Response => {
+        if(Response.status === 200)
+          document.location.reload(false)
+      })
+      console.log(this.comment)
     },
-    // hideDialog(){
-    //   this.showDialog = true
-    // },
     showDialog(){
       this.isDialogVisible = true
     },

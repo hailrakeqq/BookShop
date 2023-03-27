@@ -60,6 +60,7 @@ name: "UserSettings",
   },
   data(){
     return{
+      accessToken: localStorage.getItem('accessToken'),
       user:{
         id: localStorage.getItem('id'),
         username: localStorage.getItem('username'),
@@ -113,7 +114,7 @@ name: "UserSettings",
             JSON.stringify(newUserData),{
             headers:{
               'Content-Type': 'application/json',
-              'Authorization': `bearer ${localStorage.getItem('jwtToken')}`,
+              'Authorization': `bearer ${this.accessToken}`,
             }
         }).then(response => {
           console.log(response.status)
@@ -131,7 +132,7 @@ name: "UserSettings",
         axios.delete(`http://localhost:5045/api/User/${localStorage.getItem('id')}`,{
             headers:{
               'Content-Type': 'application/json',
-              'Authorization': `bearer ${localStorage.getItem('jwtToken')}`,
+              'Authorization': `bearer ${this.accessToken}`,
             }
           }).then(response => {
             if(response.status === 200){

@@ -23,6 +23,7 @@ import { RouterLink, RouterView } from 'vue-router'
 <script lang="ts">
 import MySelect from "@/component/UI/MySelect.vue";
 import './router'
+import axios from 'axios'
   export default {
   components: {
     MySelect
@@ -31,7 +32,7 @@ import './router'
       return {
         email: localStorage.getItem("email"),
         id: localStorage.getItem("id"),
-        jwtToken: localStorage.getItem("jwtToken"),
+        jwtToken: localStorage.getItem("accessToken"),
         role: localStorage.getItem("role"),
         username: localStorage.getItem("username"),
         selectedSort: '',

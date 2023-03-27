@@ -23,4 +23,9 @@ public static class DIContainer
     {
         return services.AddSingleton<IFileRepository, FileService>();
     }
+    
+    public static IServiceCollection AddCommentService(this IServiceCollection services)
+    {
+        return services.AddSingleton<ICommentRepository, CommentService>();
+    }
 }

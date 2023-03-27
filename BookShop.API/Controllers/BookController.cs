@@ -18,10 +18,12 @@ public class BookController : Controller
     private readonly ISellerRepository _sellerRepository;
 
     public BookController(IBookRepository bookRepository, 
-                          IUserRepository userRepository)
+                          IUserRepository userRepository,
+                          ISellerRepository sellerRepository)
     {
         _bookRepository = bookRepository;
         _userRepository = userRepository;
+        _sellerRepository = sellerRepository;
     }
 
     [HttpGet]
@@ -73,8 +75,9 @@ public class BookController : Controller
     [Route("AddBookToUserWishList/{id:Guid}")]
     public IActionResult AddBookToWishList(CurrentUser currentUser, [FromRoute] string id)
     {
-        var existBook = _userRepository.CheckIfBookExistInWishList(currentUser.Id, id);
-        if (!existBook)
+        var isBookExistInWishlist = _userRepository.CheckIfBookExistInWishList(currentUser.Id, id);
+        var isBookExistInLibrary = _userRepository.CheckIfBookExistInLibrary(currentUser.Id, id);
+        if (!(isBookExistInWishlist && isBookExistInLibrary))
         {
             _userRepository.AddBookToUserWishList(currentUser.Id, _bookRepository.GetItem(id));
             return Ok("Book has been add to your wish list");

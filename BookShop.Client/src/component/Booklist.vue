@@ -3,10 +3,11 @@
     <BookItem 
         class="book" 
         v-for="book in books"
+        :isWishlistPage="isWishListPage"
         :book="book"
         :key="book.id"/>
   </div>
-  <h2 v-else style="color: red">Book list this seller is empty.</h2>
+  <h2 v-else style="color: red">This book list is empty.</h2>
 </template>
 
 <script lang="ts">
@@ -18,6 +19,10 @@ export default {
     books: {
       type: Array,
       required: true
+    },
+    isWishListPage:{
+      type: Boolean,
+      required: false
     },
     images: {
       type: Map,

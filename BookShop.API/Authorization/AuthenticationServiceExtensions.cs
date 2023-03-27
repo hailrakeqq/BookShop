@@ -10,6 +10,6 @@ public static class AuthenticationServiceExtensions
 
     public static IServiceCollection AddLoginResponce(this IServiceCollection services)
     {
-        return services.AddSingleton<LoginResponce>();
+        return services.AddSingleton<LoginResponse>();
     }
 }

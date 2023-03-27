@@ -1,3 +1,4 @@
+using BookShop.API.Authorization;
 using BookShop.API.Model.Entity;
 
 namespace BookShop.API.Repository;
@@ -11,4 +12,5 @@ public interface IUserRepository : IRepository<User>
     void AddBookToUserWishList(string id, Book book);
     void DeleteBookFromUserWishList(string id, Book book);
     void AddBookToUserLibrary(string id, Book book);
+    void UpdateRefreshTokenByUserId(RefreshToken refreshToken, string id);
 }
