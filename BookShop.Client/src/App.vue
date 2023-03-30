@@ -8,11 +8,12 @@ import { RouterLink, RouterView } from 'vue-router'
     <div class="wrapper">
       <nav>
         <RouterLink class="item" to="/">Home</RouterLink>
-        <RouterLink class="item" v-if="!jwtToken" to="/login">Login</RouterLink>
-        <div v-else-if="role === 'user'">
+        <RouterLink class="item" to="/topSellerList">Top Seller List</RouterLink>
+        <RouterLink class="selectedList" v-if="!jwtToken" to="/login">Login</RouterLink>
+        <div class="selectedList" v-else-if="role === 'user'">
           <my-select v-model="selectedSort" :disabledValue="username" :options="sortOptionsForUser" ></my-select>
         </div>
-        <div v-else-if="role === 'seller'">
+        <div class="selectedList" v-else-if="role === 'seller'">
           <my-select v-model="selectedSort" :disabledValue="username" :options="sortOptionsForSeller" ></my-select>
         </div>
       </nav>
@@ -135,8 +136,15 @@ import axios from 'axios'
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
   padding: 20px;
   margin: 20px 0;
+  display: flex;
+  flex-direction: column;
 }
 .item{
   padding-left: 30px;
+}
+.selectedList{
+  margin-right: 25px;
+  display: inline-block;
+  float: right;
 }
 </style>

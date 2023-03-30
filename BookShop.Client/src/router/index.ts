@@ -7,7 +7,7 @@ import BookPage from '../views/BookPage.vue'
 import AccountPage from '../views/AccountPage.vue'
 import SettingsPage from '../views/SettingsPage.vue'
 import NotFoundPage from '../views/NotFoundPage.vue'
-
+import TopSellerList from '../views/TopSellerList.vue'
 //user rout
 import Library from '../views/user-views/Library.vue'
 import Wishlist from '../views/user-views/Wishlist.vue'
@@ -78,6 +78,11 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'notFoundPage',
       component: NotFoundPage
+    },
+    {
+      path: '/topSellerList',
+      name: 'topSellerList',
+      component: TopSellerList
     }
   ]
 })

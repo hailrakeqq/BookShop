@@ -23,6 +23,9 @@ public class AuthController : Controller
     }
 
     private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
+
+    private IMongoCollection<RefreshTokenDocument> _refreshTokens =>
+        _context.MongoDatabase.GetCollection<RefreshTokenDocument>("RefreshTokens");
     private IMongoCollection<UsersLibrary> _library =>
         _context.MongoDatabase.GetCollection<UsersLibrary>("UsersLibrary");
 
@@ -49,6 +52,11 @@ public class AuthController : Controller
                 Password = Toolchain.GenerateHash(user.Password!),
                 Role = user.Role
             };
+            var refreshTokenDocument = new RefreshTokenDocument
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = user.Id,
+            };
 
             switch (user.Role)
             {
@@ -63,6 +71,7 @@ public class AuthController : Controller
                     };
                     await _users.InsertOneAsync(seller);
                     await _sellerStats.InsertOneAsync(sellerStats);
+                    await _tokenService.CreateRefreshTokenDocumentAsync(refreshTokenDocument);
                     return Ok(seller);
 
                 default:
@@ -81,6 +90,7 @@ public class AuthController : Controller
                     await _users.InsertOneAsync(user);
                     await _library.InsertOneAsync(usersLibrary);
                     await _wishList.InsertOneAsync(usersWishlist);
+                    await _refreshTokens.InsertOneAsync(refreshTokenDocument);
                     return Ok(user);
             }
         }
@@ -93,12 +103,12 @@ public class AuthController : Controller
     {
         var currentUser = _users.Find(u => (u.Email == userLoginModel.EmailOrLogin!.ToLower() || 
                                             u.Username == userLoginModel.EmailOrLogin!.ToLower()) &&
-                                            u.Password == Toolchain.GenerateHash(userLoginModel.Password))
+                                            u.Password == Toolchain.GenerateHash(userLoginModel.Password!))
             .FirstOrDefault();
 
         if (currentUser != null)
         {
-            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var newRefreshToken = _tokenService.GenerateRefreshToken(currentUser.Id);
             var loginResponse = new LoginResponse
             {
                 Id = currentUser.Id,
@@ -106,9 +116,9 @@ public class AuthController : Controller
                 Username = currentUser.Username,
                 Role = currentUser.Role,
                 AccessToken = _tokenService.GenerateAccessToken(currentUser),
-                RefreshToken = newRefreshToken.Token
+                RefreshToken = newRefreshToken.RefreshToken
             };
-            _userService.UpdateRefreshTokenByUserId(newRefreshToken, currentUser.Id);
+            _tokenService.UpdateRefreshTokenByUserId(newRefreshToken, currentUser.Id!);
             return Ok(loginResponse);
         }
 
@@ -116,10 +126,12 @@ public class AuthController : Controller
     }
 
     [HttpPost("refresh-token")]
-    public IActionResult RefreshToken([FromHeader]string UserId, [FromHeader] string refreshToken)
+    public IActionResult RefreshToken([FromHeader]string userId, [FromHeader] string refreshToken)
     {
-        var user = _userService.GetItem(UserId);
-        if(user.RefreshToken != refreshToken && user.TokenExpires < DateTime.Now)
+        var user = _userService.GetItem(userId);
+        var userRefreshTokenDocument = _tokenService.GetRefreshTokenDocumentById(user.Id!);
+        
+        if(userRefreshTokenDocument.RefreshToken != refreshToken && userRefreshTokenDocument.TokenExpires < DateTime.Now)
             return Unauthorized("Invalid refresh token.");
 
         var newAccessToken = _tokenService.GenerateAccessToken(user);

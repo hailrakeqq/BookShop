@@ -1,7 +1,7 @@
 <template>
   <div class="main" v-if="comments.length > 0">
-    <Comment
-        class="comment"
+    <h4>Comments ({{comments.length}})</h4>
+    <Comment class="comment"
         v-for="comment in comments"
         :comment="comment"
         :key="comment.id"/>
@@ -26,5 +26,7 @@ name: "CommentList",
 </script>
 
 <style scoped>
-
+.comment{ 
+  margin-top: 15px;
+}
 </style>

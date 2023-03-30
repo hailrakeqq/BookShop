@@ -117,7 +117,6 @@ name: "UserSettings",
               'Authorization': `bearer ${this.accessToken}`,
             }
         }).then(response => {
-          console.log(response.status)
           if(response.status === 200){
             this.dialogVisibleChangeUsername = false
             this.dialogVisibleChangeEmail = false

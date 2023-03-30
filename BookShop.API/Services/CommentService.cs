@@ -21,6 +21,13 @@ public class CommentService : ICommentRepository
     {
         return comment.UserId == id ? true : false;
     }
+
+    public bool IsUserAlreadyHaveCommentForThisBook(string bookId, string userId)
+    {
+        var userComment = GetBookComment(bookId).Where(u => u.UserId == userId).FirstOrDefault();
+        return userComment != null ? true : false;
+    }
+    
     public List<Comment> GetUserComment(string userId)
     {
         return GetList().Where(u => u.UserId == userId).ToList();
@@ -33,7 +40,7 @@ public class CommentService : ICommentRepository
 
     public List<Comment> GetBookComment(string bookId)
     {
-        var filter = Builders<Comment>.Filter.Eq("bookId", bookId);
+        var filter = Builders<Comment>.Filter.Eq("BookId", bookId);
         var commentCollection = _comments.Find(filter).ToList();
 
         return commentCollection != null ? commentCollection : null!;

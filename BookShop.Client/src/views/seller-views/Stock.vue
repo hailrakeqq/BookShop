@@ -39,7 +39,7 @@ export default {
     },
     loadBookAndImages(){
       this.getBookCollection();
-      getImagesArrayFromServer()
+      getImagesHashMapFromServer()
           .then(images => {this.images = images})
           .then(() => this.findCoverForBookByBookTitle());
     }

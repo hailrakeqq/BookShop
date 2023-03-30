@@ -10,14 +10,15 @@ namespace BookShop.API.Service;
 public class UserService : IUserRepository
 {
     private readonly ApplicationDbContext _context;
-    private IMongoCollection<User> _users => _context.MongoDatabase.GetCollection<User>("Users");
-
+    
     public UserService(ApplicationDbContext context)
     {
         _context = context;
     }
 
-
+    private IMongoCollection<User> _users => 
+        _context.MongoDatabase.GetCollection<User>("Users");
+    
     private IMongoCollection<BsonDocument> _library =>
         _context.MongoDatabase.GetCollection<BsonDocument>("UsersLibrary");
 
@@ -72,7 +73,7 @@ public class UserService : IUserRepository
         return null!;
     }
 
-    public List<Book> GetBookList(BsonValue searchedList)
+    private List<Book> GetBookList(BsonValue searchedList)
     {
         return searchedList.AsBsonArray.Select(x => new Book
         {
@@ -103,18 +104,19 @@ public class UserService : IUserRepository
         return result is not null ? true : false;
     }
 
-    public bool CheckIfBookExistInLibrary(string userId, string bookId)
+    public async Task<bool> CheckIfBookExistInLibrary(string userId, string bookId)
     {
         var filter = Builders<BsonDocument>.Filter.And(
             Builders<BsonDocument>.Filter.Eq("OwnerId", userId),
-            Builders<BsonDocument>.Filter.ElemMatch(
-                "BoughtBook", Builders<BsonDocument>.Filter.Eq("_id", bookId)
+            Builders<BsonDocument>.Filter
+                .ElemMatch("BoughtBook", Builders<BsonDocument>.Filter.Eq("_id", bookId)
             ));
         var projection =
-            Builders<BsonDocument>.Projection.ElemMatch("BoughtBook", Builders<BsonDocument>.Filter.Eq("_id", bookId));
-        var result = _library.Find(filter).Project(projection).FirstOrDefault();
-
-        return result is not null ? true : false;
+            Builders<BsonDocument>.Projection
+                .ElemMatch("BoughtBook", Builders<BsonDocument>.Filter.Eq("_id", bookId));
+        var result = await _library.Find(filter).Project(projection).FirstOrDefaultAsync();
+        
+        return result != null;
     }
 
     public void AddBookToUserWishList(string id, Book book)
@@ -138,18 +140,6 @@ public class UserService : IUserRepository
         var update = Builders<BsonDocument>.Update.Push("BoughtBook", book);
 
         _library.FindOneAndUpdateAsync(filter, update);
-    }
-
-    public void UpdateRefreshTokenByUserId(RefreshToken refreshToken, string id)
-    {
-        var filter = Builders<User>.Filter.Eq("_id", id);
-        var updateToken = Builders<User>.Update.Set("RefreshToken", refreshToken.Token);
-        var updateCreatedTime = Builders<User>.Update.Set("TokenCreated", refreshToken.Created);
-        var updateExpiresTime = Builders<User>.Update.Set("TokenExpires", refreshToken.Expires);
-        
-        _users.UpdateOne(filter, updateToken);
-        _users.UpdateOne(filter, updateCreatedTime);
-        _users.UpdateOne(filter, updateExpiresTime);
     }
 
     public void Create(User user)

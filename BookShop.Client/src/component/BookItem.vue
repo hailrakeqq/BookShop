@@ -52,7 +52,6 @@ export default {
           'Authorization': `bearer ${localStorage.getItem("accessToken")}`,
         }
       }).then(response => {
-        console.log(response)
             if(response.status === 200){
               alert("book has been successfully deleted from your wishlist")
               document.location.reload(false)
@@ -60,7 +59,6 @@ export default {
           })
     },
     goToBookPage(id){
-      console.log("clicked")
       this.$router.push({name: 'book', params: {id: id}})
     },
     redirectToChangeBookDataPage(id){

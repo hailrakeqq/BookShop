@@ -15,6 +15,13 @@
       <div class="book-data-block">
         <div class="book-data-block-main">
           <h1>{{book.title}}</h1>
+          <star-rating id="rating" class="rating-book"
+                       v-model:rating="this.book.rating"
+                       v-bind:read-only="true"
+                       v-bind:increment="0.1"
+                       v-bind:show-rating="true"
+                       v-bind:star-size="10"
+                       v-bind:border-width="2"></star-rating>
           <h3>Author: <b style="color: blue">{{book.author}}</b></h3>
           <h4>Genre: {{genrelist}}</h4>
           <h5>Year of publication: {{book.yearOfPublication}}</h5>
@@ -29,6 +36,7 @@
 
     <div class="comment-section">
       <div class="comment-form">
+      <p v-if="isUserHaveBook === false">You cannot add comment because you didn't have this book.</p>
         <my-input v-model="comment.text" id="comment-input" type="text" placeholder="Your comment"/>
         <star-rating class="rating-book"
                      v-model:rating="comment.rating"
@@ -36,10 +44,10 @@
                      v-bind:show-rating="false"
                      v-bind:star-size="18"
                      v-bind:border-width="2"></star-rating>
-        <MyButton @click="addComment">Add a comment</MyButton>
+        <MyButton v-if="isUserHaveBook === true" @click="addComment">Add a comment</MyButton>
       </div>
       <div class="render-comment">
-        <!--here can be comment loaded from db-->
+        <comment-list :comments="bookComment"></comment-list>
       </div>
     </div>
     <my-dialog v-model:show="isDialogVisible">
@@ -66,9 +74,10 @@ import MyButton from '@/component/UI/MyButton.vue'
 import MyInput from '@/component/UI/MyInput.vue'
 import MyDialog from '@/component/UI/MyDialog.vue'
 import MyForm from '@/component/Form.vue'
+import CommentList from '@/component/CommentList.vue'
 import StarRating from 'vue-star-rating'
 export default {
-  components: {MyButton, MyInput, StarRating , MyDialog, MyForm},
+  components: {MyButton, MyInput, StarRating , MyDialog, MyForm, CommentList},
   name: "BookPage",
   data(){
     return{
@@ -77,8 +86,9 @@ export default {
       jwtToken: localStorage.getItem('accessToken'),
       book: {},
       bookComment: [],
-      bookCount: 1,
+      bookCount: 1, 
       genrelist: '',
+      isUserHaveBook: false,
       isDialogVisible: false,
       image: null,
       isPageLoading: false,
@@ -93,13 +103,34 @@ export default {
       try {
         this.isPageLoading = true
         this.getBookTextData(this.$route.params.id)
-            .then(() =>{
-              this.getBookCoverImage(this.book.title)
-            })
+            .then(() => this.getBookCoverImage(this.book.title))
+        this.getBookComment()
+        this.CheckIfUserHaveThisBook()
       } catch (e) {
         alert(e.message)
       } finally {
         this.isPageLoading = false
+      }
+    },
+    changeCommentCreatedDate(){
+      /* change comment created date:
+       * example: 
+       * before: 2023-03-27T11:51:31.257+00:00
+       * after: 2023.03.27
+      */
+      this.bookComment.forEach(comment =>
+          comment.timeWhenCommentWasCreated = comment.timeWhenCommentWasCreated.replace(/-/g, '.').split('T')[0])
+    },
+    async getBookComment(){
+      try{
+        axios.get(`http://localhost:5045/api/Comment/GetCommentForBook/${this.$route.params.id}`)
+            .then(response => {
+              this.bookComment = response.data
+              this.changeCommentCreatedDate()
+            })
+              
+      }catch (e) {
+        alert(e.message)
       }
     },
     async getBookTextData(id){
@@ -119,20 +150,36 @@ export default {
         responseType: 'blob'
       }).then(response =>this.image = URL.createObjectURL(response.data))
     },
+    CheckIfUserHaveThisBook(){
+      axios.get(`http://localhost:5045/api/Comment/isUserHaveBook/${this.$route.params.id}`, {}, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `bearer ${this.jwtToken}`
+        }}).then(response => {
+          if(response.status === 200)
+            this.isUserHaveBook = true
+          else
+            this.isUserHaveBook = false 
+      })
+    },
     async addComment(){
       const comment = {
         text: this.comment.text,
         rating: this.comment.rating
       }
-      await axios.post(`http://localhost:5045/api/Comment/CreateBookComment/${this.book.id}`, JSON.stringify(comment), { 
-        headers:{
+      try {
+        await axios.post(`http://localhost:5045/api/Comment/CreateBookComment/${this.book.id}`, JSON.stringify(comment), {
+          headers:{
             "Content-Type": "application/json",
             "Authorization": `bearer ${this.jwtToken}`},
-      }).then(Response => {
-        if(Response.status === 200)
-          document.location.reload(false)
-      })
-      console.log(this.comment)
+        }).then(Response => {
+          if(Response.status === 200)
+            document.location.reload(false)
+        })
+      } catch (e) {
+        alert("You Can Add Only 1 comment for 1 book.")
+        document.location.reload(false)
+      }
     },
     showDialog(){
       this.isDialogVisible = true
@@ -197,7 +244,7 @@ export default {
 
 <style scoped>
 .main{
-  margin-left: 100px;
+  margin-left: 180px;
   padding: 50px;
 }
 .img{
@@ -227,6 +274,10 @@ export default {
 }
 .comment-section{
   margin-left: 150px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 .comment-form{
   padding: 15px;

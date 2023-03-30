@@ -142,7 +142,7 @@ name: "BookConstructor",
     },
     async sendBookCoverFileToServer() {
       const formData = new FormData()
-      formData.append(`${this.book.title}`, this.file, this.book.title)
+      formData.append(`${this.book.title.trim()}`, this.file, this.book.title.trim())
       try {
         await axios.post('http://localhost:5045/api/File/SaveBookCover', formData, {
           headers: {
@@ -161,7 +161,7 @@ name: "BookConstructor",
       try {
           const book = {
             sellerId: this.sellerData.id,
-            title: this.book.title,
+            title: this.book.title.trim(),
             description: this.book.description,
             genre: this.book.genre,
             author: this.book.author,

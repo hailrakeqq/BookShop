@@ -32,7 +32,11 @@ public class FileController : Controller
     public IActionResult SendBookCoverByName([FromRoute] string BookName)
     {
         var requestedImage = _fileService.GetFileByName("bookCover", $"{BookName}.jpg");
-        return new FileContentResult(requestedImage, "image/jpeg");
+        if(requestedImage != null)
+            return new FileContentResult(requestedImage, "image/jpeg");
+        
+        var notFoundImage = _fileService.GetFileByName("bookCover", $"notfound.jpg");
+        return new FileContentResult(notFoundImage, "image/jpeg");
     }
 
     [HttpPost]

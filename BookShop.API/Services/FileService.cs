@@ -20,7 +20,9 @@ public class FileService : IFileRepository
 
     public byte[] GetFileByName(string path, string fileName)
     {
-        return System.IO.File.ReadAllBytes($"{path}/{fileName}");
+        if(File.Exists(Path.Combine(path, fileName)))
+            return System.IO.File.ReadAllBytes($"{path}/{fileName}");
+        return null;
     }
 
     public bool SaveFileToDirectory(string path, IFormCollection files)
@@ -30,7 +32,7 @@ public class FileService : IFileRepository
         if (file == null || file.Length == 0)
             return false;
         
-        var fileName = Path.GetFileName(files.Files[0].FileName);
+        var fileName = Path.GetFileName(files.Files[0].FileName.Trim());
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), path, $"{fileName}.jpg");
         
         //replace file if it already exist in filepath directory

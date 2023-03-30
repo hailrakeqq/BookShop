@@ -8,10 +8,11 @@ public class BookService : IBookRepository
 {
     private readonly ApplicationDbContext _context;
     private IMongoCollection<Book> _books => _context.MongoDatabase.GetCollection<Book>("Books");
-
-    public BookService(ApplicationDbContext context)
+    private readonly ICommentRepository _commentRepository;
+    public BookService(ApplicationDbContext context, ICommentRepository commentRepository)
     {
         _context = context;
+        _commentRepository = commentRepository;
     }
     
     public IEnumerable<Book> GetList()
@@ -41,6 +42,33 @@ public class BookService : IBookRepository
         var filter = Builders<Book>.Filter.Eq("Id", book.Id);
         var update = Builders<Book>.Update.Set("CountInStock", book.CountInStock - countBooks);
         _books.UpdateOne(filter, update);
+    }
+    
+    public void UpdateBookRating(string id ,double rating)
+    {
+        double ratingBeforeUpdate = GetCurrentBookRating(id);
+        int commentCount = GetBookCommentCount(id); 
+        double updatedRating = ((ratingBeforeUpdate * commentCount) + rating) / (commentCount + 1);
+        
+        _books.UpdateOne(
+            Builders<Book>.Filter.Eq("_id", id),
+            Builders<Book>.Update.Set("Rating", updatedRating));
+    }
+
+    public double GetCurrentBookRating(string id)
+    {
+        var bookCommentCollection = _commentRepository.GetBookComment(id);
+        double rating = 0;
+        
+        foreach (var book in bookCommentCollection)
+            rating += Convert.ToDouble(book.Rating);
+        
+        return rating / bookCommentCollection.Count;
+    }
+
+    private int GetBookCommentCount(string id)
+    {
+        return _commentRepository.GetBookComment(id).Count;
     }
 
     public void Delete(string id)

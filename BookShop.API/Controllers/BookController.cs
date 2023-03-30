@@ -55,13 +55,14 @@ public class BookController : Controller
 
     [HttpPost]
     [Route("BuyBook/{id:Guid}")]
-    public IActionResult BuyBook(CurrentUser currentUser, [FromRoute] string id, [FromBody] int countBooks)
+    public async Task<IActionResult> BuyBook(CurrentUser currentUser, [FromRoute] string id, [FromBody] int countBooks)
     {
         var book = _bookRepository.GetItem(id);
-        if (book.CountInStock > 0 && !_userRepository.CheckIfBookExistInLibrary(currentUser.Id, id))
+        if (book.CountInStock > 0 && !await _userRepository.CheckIfBookExistInLibrary(currentUser.Id, id))
         {
             if (_userRepository.CheckIfBookExistInWishList(currentUser.Id, id))
                 _userRepository.DeleteBookFromUserWishList(currentUser.Id, book);
+            
             _userRepository.AddBookToUserLibrary(currentUser.Id, book);
             _bookRepository.UpdateOnBuy(book, countBooks);
             _sellerRepository.UpdateCountOfSoldProduct(book.SellerId, countBooks);
@@ -73,11 +74,11 @@ public class BookController : Controller
 
     [HttpPost]
     [Route("AddBookToUserWishList/{id:Guid}")]
-    public IActionResult AddBookToWishList(CurrentUser currentUser, [FromRoute] string id)
+    public async Task<IActionResult> AddBookToWishList(CurrentUser currentUser, [FromRoute] string id)
     {
         var isBookExistInWishlist = _userRepository.CheckIfBookExistInWishList(currentUser.Id, id);
         var isBookExistInLibrary = _userRepository.CheckIfBookExistInLibrary(currentUser.Id, id);
-        if (!(isBookExistInWishlist && isBookExistInLibrary))
+        if (!(isBookExistInWishlist && await isBookExistInLibrary))
         {
             _userRepository.AddBookToUserWishList(currentUser.Id, _bookRepository.GetItem(id));
             return Ok("Book has been add to your wish list");
