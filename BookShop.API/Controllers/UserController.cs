@@ -1,6 +1,7 @@
 using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
 using BookShop.Tools;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -32,29 +33,42 @@ public class UserController : Controller
         var user = _userRepository.GetItem(id);
         if (user != null)
         {
+            if (user.Role == "seller")
+            {
+                var sellerStats = _sellerRepository.GetSellerStats(id);
+                var sellerData = new SellerPublicData()
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Role = user.Role,
+                    CountOfProduct = sellerStats.CountOfProduct,
+                    CountOfSoldProduct = sellerStats.CountOfSoldProduct
+                };
+                return Ok(sellerData);
+            }
+
             var userData = new UserPublicData()
             {
                 Id = user.Id,
                 Username = user.Username,
-                Role = user.Role
+                Role = user.Role,
+                BoughtBook = _userRepository.GetUserLibrary(id).Count,
+                WishlistCount = _userRepository.GetUserWishlist(id).Count
             };
             
-            if (user.Role == "seller")
-            {
-                var sellerStats = _sellerRepository.GetSellerStats(id);
-                userData.CountOfProduct = sellerStats.CountOfProduct; 
-                userData.CountOfSoldProduct = sellerStats.CountOfSoldProduct;
-                return Ok(userData);
-            }
-
-            userData.BoughtBook = _userRepository.GetUserLibrary(id).Count;
-            userData.WishlistCount = _userRepository.GetUserWishlist(id).Count;
             return Ok(userData);
         }
         
         return NotFound();
     }
-    
+
+    [HttpGet]
+    [Route("GetSellerList")]
+    public IActionResult GetSellerList()
+    {
+        return Ok(_userRepository.GetSellerList());
+    }
+
     [HttpGet]
     [Route("GetUserWishlist/{id:Guid}")]
     public IActionResult GetUserWishList([FromRoute] string id)
@@ -78,6 +92,7 @@ public class UserController : Controller
     }
 
     [HttpPut]
+    [Authorize]
     [Route("ChangeUserData/{id:Guid}")]
     public IActionResult ChangeUserData([FromRoute] string id, [FromBody] UserChangeDataModel newUserData)
     {
@@ -108,6 +123,7 @@ public class UserController : Controller
     }
 
     [HttpDelete]
+    [Authorize]
     [Route("{id:Guid}")]
     public IActionResult DeleteUserAccount([FromRoute] string id)
     {

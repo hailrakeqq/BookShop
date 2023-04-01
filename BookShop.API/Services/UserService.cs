@@ -10,10 +10,11 @@ namespace BookShop.API.Service;
 public class UserService : IUserRepository
 {
     private readonly ApplicationDbContext _context;
-    
-    public UserService(ApplicationDbContext context)
+    private readonly ISellerRepository _sellerRepository;
+    public UserService(ApplicationDbContext context, ISellerRepository sellerRepository)
     {
         _context = context;
+        _sellerRepository = sellerRepository;
     }
 
     private IMongoCollection<User> _users => 
@@ -44,6 +45,27 @@ public class UserService : IUserRepository
     public User GetItem(string id)
     {
         return _users.Find(u => u.Id == id).FirstOrDefault();
+    }
+
+    public List<SellerPublicData> GetSellerList()
+    {
+        var sellers = GetList().Where(u => u.Role == "seller").ToList();
+        var sellerPublicData = new List<SellerPublicData>();
+        
+        foreach (var seller in sellers)
+        {
+            var sellerStats = _sellerRepository.GetSellerStats(seller.Id); 
+            sellerPublicData.Add(new SellerPublicData()
+            {
+                CountOfSoldProduct = sellerStats.CountOfSoldProduct,
+                CountOfProduct = sellerStats.CountOfProduct,
+                Id = seller.Id,
+                Role = seller.Role,
+                Username = seller.Username
+            });
+        }
+
+        return sellerPublicData;
     }
 
     public List<Book> GetUserWishlist(string id)

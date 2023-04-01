@@ -56,13 +56,14 @@ name: "AccountPage",
   },
   methods: {
     async getUserData(){
-        const response = await axios.get(`http://localhost:5045/api/User/GetUserPublicData/${localStorage.getItem('id')}`)
-        this.currentUser = await response.data
+      const response = await axios.get(`http://localhost:5045/api/User/GetUserPublicData/${this.$route.params.id}`)
+      console.log(await response.data)
+      this.currentUser = await response.data
     },
     async getBookCollection(){
       const response = await getBookCollectionFromAPIEndpointAndId(
           "http://localhost:5045/api/Book/GetSellerBookCollection",
-          localStorage.getItem('id')
+          this.$route.params.id
       )
       this.books = response
     },

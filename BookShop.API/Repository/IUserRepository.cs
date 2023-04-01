@@ -5,6 +5,7 @@ namespace BookShop.API.Repository;
 
 public interface IUserRepository : IRepository<User>
 {
+    List<SellerPublicData> GetSellerList();
     List<Book> GetUserWishlist(string id);
     List<Book> GetUserLibrary(string id);
     bool CheckIfBookExistInWishList(string userId, string bookId);
