@@ -6,6 +6,12 @@
     <div class="text_data">
       <h2>{{book.title}}</h2>
       <h3>{{book.price}} грн.</h3>
+      <star-rating id="rating" class="rating-book"
+                   v-model:rating="book.rating"
+                   v-bind:read-only="true"
+                   v-bind:show-rating="false"
+                   v-bind:star-size="10"
+                   v-bind:border-width="2"></star-rating>
       <div v-if="userRole === 'seller'">
         <my-button @click="redirectToChangeBookDataPage(book.id)">Update</my-button>
         <my-button @click="deleteBookRequest(book.id)">Delete</my-button>
@@ -23,11 +29,12 @@
 <script>
 import MyButton from "@/component/UI/MyButton.vue";
 import '../router'
+import StarRating from 'vue-star-rating'
 import axios from 'axios'
 
 export default {
   components: {
-    MyButton,
+    MyButton, StarRating
   },
   name: "bookItem",
   data(){
