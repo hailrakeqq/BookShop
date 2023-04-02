@@ -57,7 +57,6 @@ name: "AccountPage",
   methods: {
     async getUserData(){
       const response = await axios.get(`http://localhost:5045/api/User/GetUserPublicData/${this.$route.params.id}`)
-      console.log(await response.data)
       this.currentUser = await response.data
     },
     async getBookCollection(){
@@ -65,7 +64,8 @@ name: "AccountPage",
           "http://localhost:5045/api/Book/GetSellerBookCollection",
           this.$route.params.id
       )
-      this.books = response
+      
+      this.books = response.sort((book1, book2) => book2.rating - book1.rating)
     },
     findCoverForBookByBookTitle(){
       this.books.forEach(book => {

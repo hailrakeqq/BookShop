@@ -38,16 +38,6 @@ name: "TopSellerList",
       ],
     }
   },
-  computed:{
-    sortedSellers() {
-      if (!this.selectedSort) {
-        return this.sellers;
-      }
-      return this.sellers.slice().sort((seller1, seller2) =>
-          seller1[this.selectedSort] > seller2[this.selectedSort] ? 1 : -1
-      );
-    }
-  },
   methods:{
     loadPage(){
       this.getSellersCollection() 
