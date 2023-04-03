@@ -1,5 +1,5 @@
 <template>
-  <h1>My test book stock</h1>
+  <h1>My book stock</h1>
   <booklist :books="books" :images="images" v-if="!isBookLoading"></booklist>
   <div v-else>Loading...</div>
 

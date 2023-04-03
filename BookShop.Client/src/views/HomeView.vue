@@ -8,9 +8,10 @@
     <div class="main-container" v-if="!isBookLoading">
       <div class="left-block">
         <my-select id="select" v-model="selectedSort" :disabledValue="disabledValue" :options="sortOptions"></my-select>
-        <book-genre-list class="genre-list" :items="genreList" v-model="sortByGenge"></book-genre-list>
+        <book-genre-list class="genre-list" :items="genreList" v-model="sortByGenre"></book-genre-list>
+        <my-button @click="getBookListBySelectedGenre">Find by Genre</my-button>
       </div>
-      <Booklist class="book-list" :books="filteredItems"  />
+      <Booklist class="book-list" :books="sortedListByGenre"/>
     </div>
     <div v-else>Loading...</div>
   </div>
@@ -54,7 +55,7 @@ export default {
         {value: 'descending', name: 'Price: High to Low'},
         {value: 'countInStock', name: 'By count in stock'}
       ],
-      sortByGenge: [],
+      sortByGenre: [],
       genreList: [
         {label: 'Action', value: 'action'},
         {label: 'Detective', value: 'detective'},
@@ -72,6 +73,18 @@ export default {
     }
   },
   computed:{
+    sortedListByGenre(){
+      if(this.sortByGenre.length === 0)
+        return this.filteredItems
+      
+      return this.filteredItems.filter(item => item.genre.some(genre => this.sortByGenre.includes(genre)))
+    },
+    filteredItems(){
+      if(!this.searchByName)
+        return this.sortedBooks
+
+      return this.sortedBooks.filter(item => item.title.toLowerCase().includes(this.searchByName.toLowerCase()))
+    },
     sortedBooks() {
       if (!this.selectedSort) {
         return this.books;
@@ -85,21 +98,15 @@ export default {
               book2[this.selectedSort].rating - book1[this.selectedSort].rating)
         case "countInStock":
           return this.books.slice().sort((book1, book2) =>
-              book2.countInStock - book1.countInStock)
+              book2.countInStock - book1.countInStock);
         case "growing":
           return this.books.slice().sort((book1, book2) =>
-              book1.price - book2.price)
+              book1.price - book2.price);
         case "descending":
           return this.books.slice().sort((book1, book2) =>
-              book2.price - book1.price)
+              book2.price - book1.price);
       }
     },
-    filteredItems(){
-      if(!this.searchByName)
-        return this.sortedBooks
-
-      return this.sortedBooks.filter(item => item.title.toLowerCase().includes(this.searchByName.toLowerCase()))
-    }
   },
   methods:{
     redirectToBookConstructor(){
@@ -109,7 +116,7 @@ export default {
       try{
         this.isBookLoading = true
         const response = await axios.get('http://localhost:5045/api/Book')
-        this.books = response.data
+        this.books = response.data.reverse()
       } catch (e) {
         alert("error")
       } finally {

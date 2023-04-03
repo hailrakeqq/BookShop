@@ -105,7 +105,7 @@ export default {
         this.getBookTextData(this.$route.params.id)
             .then(() => this.getBookCoverImage(this.book.title))
         this.getBookComment()
-        this.CheckIfUserHaveThisBook()
+        //this.CheckIfUserHaveThisBook()
       } catch (e) {
         alert(e.message)
       } finally {
@@ -154,7 +154,6 @@ export default {
       axios.get(`http://localhost:5045/api/Comment/isUserHaveBook/${this.$route.params.id}`, {}, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `bearer ${this.jwtToken}`
         }}).then(response => {
           if(response.status === 200)
             this.isUserHaveBook = true

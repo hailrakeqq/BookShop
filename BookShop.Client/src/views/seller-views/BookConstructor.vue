@@ -1,7 +1,7 @@
 <template>
   <div class="form" v-if="!this.isPageLoading">
     
-  <h1>Test Book Constructor</h1>
+  <h1>Book Constructor</h1>
     <MyForm class="form-content">
       <div class="form-item">
         <div>

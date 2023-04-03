@@ -38,6 +38,24 @@ name: "TopSellerList",
       ],
     }
   },
+  computed: {
+    sortedSellers() {
+      if (!this.selectedSort) {
+        return this.sellers;
+      }
+      switch (this.selectedSort){
+        case "username":
+          return this.sellers.slice().sort((seller1, seller2) =>
+              seller1[this.selectedSort] > seller2[this.selectedSort] ? 1 : -1);
+        case "countOfProduct":
+          return this.sellers.slice().sort((seller1, seller2) =>
+              seller2[this.selectedSort].countOfProduct - seller1[this.selectedSort].countOfProduct)
+        case "countOfSoldProduct":
+          return this.sellers.slice().sort((seller1, seller2) =>
+              seller2.countOfSoldProduct - seller1.countOfSoldProduct);
+      }
+    },
+  },
   methods:{
     loadPage(){
       this.getSellersCollection() 
