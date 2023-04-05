@@ -2,10 +2,10 @@ using System.Text;
 using BookShop.API;
 using BookShop.API.Authorization;
 using BookShop.API.DIContainer;
-using BookShop.API.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,13 +18,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration.GetSection("Jwt").GetSection("Issuer").Value,
+            ValidAudience = builder.Configuration.GetSection("Jwt").GetSection("Audience").Value,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt").GetSection("Key").Value))
         });
 builder.Services.AddHttpContextAccessor();
-
 
 builder.Services.AddCurrentUser();
 builder.Services.AddTokenService();
@@ -50,18 +49,30 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+//create db collection block
+var client = new MongoClient(builder.Configuration.GetSection("ConnectionString").Value);
+var database = client.GetDatabase("BookShop");
+var collectionNamesInDb = database.ListCollectionNames().ToList();
+
+string[] collectionNames = { "Books", "Users", "Comments", "RefreshTokens",
+                             "Sellerstats", "Users", "UsersLibrary", "UsersWishlist"};
+
+foreach (var collection in collectionNames)
+    if (!collectionNames.Contains(collection))
+        database.CreateCollection($"{collection}");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API");
-    c.RoutePrefix = string.Empty;
-});
-// }
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API");
+        c.RoutePrefix = string.Empty;
+    });
+}
 
 app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 

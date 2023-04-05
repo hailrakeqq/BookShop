@@ -1,33 +1,35 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  client:
-    build:
-      context: ./BookShop.Client
-    ports:
-      - "80:80"
-    volumes:
-      - ./vuejs:/project
-      - /project/node_modules
-    restart: always
-
   backend:
     build:
       context: ./BookShop.API
+      dockerfile: Dockerfile
+    ports:
+      - "5045:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5045
+    networks:
+      - my-network
+
+  frontend:
+    build:
+      context: ./BookShop.Client
+      dockerfile: Dockerfile
     ports:
-      - "5013:5013"
-    restart: always
-    # db:
-    #   image: postgres
-    #   restart: always
-    #   volumes:
-    #     - "./pgdata:/var/lib/postgresql/data"
-    #   environment:
-    #     POSTGRES_DB: notesapp
-    #     POSTGRES_USER: postgres
-    #     POSTGRES_PASSWORD: 1
-    # networks:
-    #   - backend
+      - "8080:8080"
+    networks:
+      - my-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27020:27020"
+    command: ["mongod", "--port", "27020"]
+    volumes:
+      - ./mongo-data:/data/db
+    networks:
+      - my-network
+
+networks:
+  my-network:
