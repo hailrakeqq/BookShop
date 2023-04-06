@@ -105,7 +105,7 @@ export default {
         this.getBookTextData(this.$route.params.id)
             .then(() => this.getBookCoverImage(this.book.title))
         this.getBookComment()
-        //this.CheckIfUserHaveThisBook()
+        this.CheckIfUserHaveThisBook()
       } catch (e) {
         alert(e.message)
       } finally {
@@ -151,15 +151,19 @@ export default {
       }).then(response =>this.image = URL.createObjectURL(response.data))
     },
     CheckIfUserHaveThisBook(){
-      axios.get(`http://localhost:5045/api/Comment/isUserHaveBook/${this.$route.params.id}`, {}, {
-        headers: {
-          "Content-Type": "application/json",
-        }}).then(response => {
-          if(response.status === 200)
+      try{
+        axios.get(`http://localhost:5045/api/Comment/isUserHaveBook/${this.$route.params.id}`, {}, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `bearer ${this.jwtToken}`},
+          }).then(response => {
+          console.log(response.status)
+          if (response.status === 200)
             this.isUserHaveBook = true
-          else
-            this.isUserHaveBook = false 
-      })
+          })
+      } catch {
+          this.isUserHaveBook = false
+      }
     },
     async addComment(){
       const comment = {

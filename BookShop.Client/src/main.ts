@@ -13,6 +13,10 @@ app.use(createPinia())
 app.use(router)
 
 axios.interceptors.response.use(response => response, error => {
+    //if user unauthorized and error about if user have current book, don't redirect to login
+    if(error.includes("CheckIfUserHaveThisBook"))
+        return
+    
     if(error.response.status === 401 && (localStorage.getItem('accessToken') == undefined))
         router.push('/login');
     else 
