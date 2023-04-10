@@ -14,7 +14,7 @@ public class AuthController : Controller
     private readonly ApplicationDbContext _context;
     private readonly ITokenService _tokenService;
     private readonly IUserRepository _userService;
-    
+
     public AuthController(ApplicationDbContext context, ITokenService tokenService, IUserRepository userService)
     {
         _context = context;
@@ -37,11 +37,11 @@ public class AuthController : Controller
 
     [HttpPost]
     [Route("Registration")]
-    public async Task<IActionResult> CreateUser([FromBody]User user)
+    public async Task<IActionResult> CreateUser([FromBody] User user)
     {
         var currentUser = _users.Find(u => u.Email == user.Email!.ToLower() ||
                                            u.Username == user.Username!.ToLower()).FirstOrDefault();
-        
+
         if (currentUser == null)
         {
             user = new User
@@ -101,7 +101,7 @@ public class AuthController : Controller
     [Route("Login")]
     public IActionResult Login([FromBody] UserLoginModel userLoginModel)
     {
-        var currentUser = _users.Find(u => (u.Email == userLoginModel.EmailOrLogin!.ToLower() || 
+        var currentUser = _users.Find(u => (u.Email == userLoginModel.EmailOrLogin!.ToLower() ||
                                             u.Username == userLoginModel.EmailOrLogin!.ToLower()) &&
                                             u.Password == Toolchain.GenerateHash(userLoginModel.Password!))
             .FirstOrDefault();
@@ -126,12 +126,12 @@ public class AuthController : Controller
     }
 
     [HttpPost("refresh-token")]
-    public IActionResult RefreshToken([FromHeader]string userId, [FromHeader] string refreshToken)
+    public IActionResult RefreshToken([FromHeader] string userId, [FromHeader] string refreshToken)
     {
         var user = _userService.GetItem(userId);
         var userRefreshTokenDocument = _tokenService.GetRefreshTokenDocumentById(user.Id!);
-        
-        if(userRefreshTokenDocument.RefreshToken != refreshToken && userRefreshTokenDocument.TokenExpires < DateTime.Now)
+
+        if (userRefreshTokenDocument.RefreshToken != refreshToken && userRefreshTokenDocument.TokenExpires < DateTime.Now)
             return Unauthorized("Invalid refresh token.");
 
         var newAccessToken = _tokenService.GenerateAccessToken(user);

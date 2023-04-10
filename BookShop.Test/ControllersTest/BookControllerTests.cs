@@ -1,7 +1,6 @@
-using BookShop.API.Authorization;
 using BookShop.API.Controllers;
+using BookShop.API.Model.Entity;
 using BookShop.API.Repository;
-using BookShop.Test.TestsData;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -10,30 +9,31 @@ namespace BookShop.Test.ControllersTest;
 
 public class BookControllerTests
 {
-    private static readonly CurrentUser currentUser = UserData.currentUser;
-    private readonly Mock<IBookRepository> _mongoBookRepository = new();
-    private readonly Mock<IUserRepository> _mongoUserRepository = new();
-    private readonly BookController systemUnderTests;
+    private readonly Mock<IBookRepository> _bookRepository;
+    private readonly Mock<IUserRepository> _userRepository;
+    private readonly Mock<ISellerRepository> _sellerRepository;
+    private readonly BookController _bookController;
 
     public BookControllerTests()
     {
-        systemUnderTests = new BookController(_mongoBookRepository.Object, _mongoUserRepository.Object);
+        var mockBookRepository = new Mock<IBookRepository>();
+        var mockUserRepository = new Mock<IUserRepository>();
+        var mockSellerRepository = new Mock<ISellerRepository>();
+
+        _bookRepository = mockBookRepository;
+        _userRepository = mockUserRepository;
+        _sellerRepository = mockSellerRepository;
+
+        _bookController = new BookController(_bookRepository.Object, _userRepository.Object, _sellerRepository.Object);
     }
 
-    // bool CheckIfExist(Book item);
-    // T GetItem(string id); - ready
-    // BuyBook((CurrentUser currentUser, [FromRoute] string id, [FromBody] int countBooks))
-    //AddBookToWishList(CurrentUser currentUser, [FromRoute] string bookId)
-    //DeleteBookFromWishList(CurrentUser currentUser, string bookId)
     [Fact]
     public async void GetBookList_ShouldReturn200Status()
     {
         // Arrange
-        _mongoBookRepository.Setup(_ => _.GetList()).Returns(BookData.GetBooks());
-        var systemUnderTests = new BookController(_mongoBookRepository.Object, _mongoUserRepository.Object);
 
         // Act
-        var result = systemUnderTests.GetBookList();
+        var result = _bookController.GetBookList();
 
         // Assert
         result.GetType().Should().Be(typeof(OkObjectResult));
@@ -44,26 +44,27 @@ public class BookControllerTests
     public async void GetBookById_ShouldReturn200Status()
     {
         //Arrange
-        var item = _mongoBookRepository.Setup(_ => _.GetItem("book1")).Returns(BookData.GetBooks()
-            .Where(i => i.Id == "book1").FirstOrDefault()!);
+        var bookID = "50c460fa-263e-4389-954e-0d4e2ae3c355";
+        _bookRepository.Setup(repo => repo.GetItem(bookID)).Returns(new Book { Id = bookID });
 
         //Act 
-        var result = systemUnderTests.GetBookById("book1");
+        var result = _bookController.GetBookById(bookID);
 
         //Assert 
-        result.GetType().Should().Be(typeof(OkObjectResult));
-        (result as OkObjectResult).StatusCode.Should().Be(200);
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult.StatusCode.Should().Be(200);
+        var bookResponse = okResult.Value as Book;
+        bookResponse.Id.Should().Be(bookID);
     }
 
     [Fact]
     public async void GetBookById_ShouldReturn404Status()
     {
         //Arrange
-        var item = _mongoBookRepository.Setup(_ => _.GetItem("book1523")).Returns(BookData.GetBooks()
-            .Where(i => i.Id == "book1523").FirstOrDefault()!);
 
         //Act 
-        var result = systemUnderTests.GetBookById("book1523");
+        var result = _bookController.GetBookById("test id");
 
         //Assert 
         result.GetType().Should().Be(typeof(NotFoundResult));
@@ -73,11 +74,13 @@ public class BookControllerTests
     [Fact]
     public async void BuyBook_ShouldReturn200Status()
     {
-        // BuyBook((CurrentUser currentUser, [FromRoute] string id, [FromBody] int countBooks))
         //Arrange
+        var currentUser = new API.Authorization.CurrentUser();
+        int countBook = 1;
+        string bookId = "50c460fa-263e-4389-954e-0d4e2ae3c355";
 
-        //Act 
-        var result = systemUnderTests.BuyBook(currentUser, "book1", 2);
+        //Act
+        var result = await _bookController.BuyBook(currentUser, bookId, countBook);
 
         //Assert
         result.GetType().Should().Be(typeof(OkObjectResult));
