@@ -12,8 +12,16 @@ public class FileService : IFileRepository
 
         foreach (var file in filesCollection)
         {
-            var fileName = file.Split('/');
-            BookCoverCollection.Add(fileName[1],System.IO.File.ReadAllBytes(file));
+            try
+            {
+                var fileName = file.Split('/');
+                BookCoverCollection.Add(fileName[1],System.IO.File.ReadAllBytes(file));
+            } 
+            catch 
+            {
+                var fileName = file.Split('\\');
+                BookCoverCollection.Add(fileName[1], System.IO.File.ReadAllBytes(file));
+            }
         }
         return Toolchain.CreateZipArchiveFromFilesList(BookCoverCollection, outputZipArchiveName);
     }

@@ -55,12 +55,11 @@ public sealed class TokenService : ITokenService
 
     public RefreshTokenDocument GenerateRefreshToken(string id)
     {
-        //TODO: придумать норм имя
-        var user = _refreshTokens.Find(Builders<RefreshTokenDocument>.Filter.Eq("UserId", id)).FirstOrDefault();
-        if (user != null)
+        var userRefreshTokenDocument = _refreshTokens.Find(Builders<RefreshTokenDocument>.Filter.Eq("UserId", id)).FirstOrDefault();
+        if (userRefreshTokenDocument != null)
         {
-            user.RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            return user;
+            userRefreshTokenDocument.RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            return userRefreshTokenDocument;
         }
         
         return null;

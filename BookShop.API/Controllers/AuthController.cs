@@ -104,25 +104,23 @@ public class AuthController : Controller
         var currentUser = _users.Find(u => (u.Email == userLoginModel.EmailOrLogin!.ToLower() ||
                                             u.Username == userLoginModel.EmailOrLogin!.ToLower()) &&
                                             u.Password == Toolchain.GenerateHash(userLoginModel.Password!))
-            .FirstOrDefault();
+                                            .FirstOrDefault();
 
-        if (currentUser != null)
+        if (currentUser == null)
+            return Unauthorized(currentUser);
+
+        var newRefreshToken = _tokenService.GenerateRefreshToken(currentUser.Id!);
+        var loginResponse = new LoginResponse
         {
-            var newRefreshToken = _tokenService.GenerateRefreshToken(currentUser.Id);
-            var loginResponse = new LoginResponse
-            {
-                Id = currentUser.Id,
-                Email = currentUser.Email,
-                Username = currentUser.Username,
-                Role = currentUser.Role,
-                AccessToken = _tokenService.GenerateAccessToken(currentUser),
-                RefreshToken = newRefreshToken.RefreshToken
-            };
-            _tokenService.UpdateRefreshTokenByUserId(newRefreshToken, currentUser.Id!);
-            return Ok(loginResponse);
-        }
-
-        return Unauthorized(currentUser);
+            Id = currentUser.Id,
+            Email = currentUser.Email,
+            Username = currentUser.Username,
+            Role = currentUser.Role,
+            AccessToken = _tokenService.GenerateAccessToken(currentUser),
+            RefreshToken = newRefreshToken.RefreshToken
+        };
+        _tokenService.UpdateRefreshTokenByUserId(newRefreshToken, currentUser.Id!);
+        return Ok(loginResponse);
     }
 
     [HttpPost("refresh-token")]
