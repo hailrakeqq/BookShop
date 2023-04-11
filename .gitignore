@@ -6,4 +6,7 @@ package.json
 BookShop.Test/.vscode/*
 BookShop.Client/.vscode/*
 BookShop.API/.vscode/*
+BookShop.Test/.vs/*
 mongo-data/
+.vs/*
+.vscode/*

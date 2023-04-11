@@ -1,3 +1,0 @@
-{
-    "dotnet-test-explorer.pathForResultFile": "*/BookShop.Test/*.@(csproj)"
-}
